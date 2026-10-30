@@ -1,0 +1,100 @@
+[
+    {
+        "name": "dead",
+        "duration": 0.5,
+        "frames": [
+            "Dead-1",
+            "Dead-2",
+            "Dead-3",
+            "Dead-4",
+            "Dead-5",
+            "Dead-6",
+            "Dead-7",
+            "Dead-8",
+            "Dead-9",
+            "Dead-10"
+        ]
+    },
+    {
+        "name": "grass",
+        "duration": 0,
+        "frames": [
+            "grass"
+        ]
+    },
+    {
+        "name": "hurt",
+        "duration": 0.5,
+        "frames": [
+            "Hurt-1",
+            "Hurt-2",
+            "Hurt-3",
+            "Hurt-4",
+            "Hurt-5",
+            "Hurt-6",
+            "Hurt-7",
+            "Hurt-8"
+        ]
+    },
+    {
+        "name": "idle",
+        "duration": 0.5,
+        "frames": [
+            "Hurt-1",
+            "Hurt-2",
+            "Hurt-3",
+            "Hurt-4",
+            "Hurt-5",
+            "Hurt-6",
+            "Hurt-7",
+            "Hurt-8"
+        ]
+    },
+    {
+        "name": "jump",
+        "duration": 0.5,
+        "frames": [
+            "Jump-1",
+            "Jump-2",
+            "Jump-3",
+            "Jump-4",
+            "Jump-5",
+            "Jump-6",
+            "Jump-7",
+            "Jump-8",
+            "Jump-9",
+            "Jump-10",
+            "Jump-11",
+            "Jump-12"
+        ]
+    },
+    {
+        "name": "run",
+        "duration": 0.5,
+        "frames": [
+            "Slide-1",
+            "Slide-2",
+            "Slide-3",
+            "Slide-4",
+            "Slide-5"
+        ]
+    },
+    {
+        "name": "slide",
+        "duration": 0.5,
+        "frames": [
+            "Slide-1",
+            "Slide-2",
+            "Slide-3",
+            "Slide-4",
+            "Slide-5"
+        ]
+    },
+    {
+        "name": "rock",
+        "duration": 0,
+        "frames": [
+            "rock"
+        ]
+    }
+]

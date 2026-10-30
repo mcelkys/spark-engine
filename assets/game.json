@@ -1,0 +1,94 @@
+{
+    "name": "Test Game",
+    "maxEntities": 4096,
+    "maxTemplates": 256,
+    "assetManifest": "/assets/assets.json",
+    "spriteManifest": "/assets/sprites.json",
+    "textureAtlas": "/assets/atlas.png",
+    "scene": 1,
+    "keyBindings": {
+        "KeyW": 1,
+        "KeyD": 2,
+        "KeyS": 4,
+        "KeyA": 8,
+        "Pause": 16
+    },
+    "templates": [
+        {
+            "id": 1,
+            "name": "Ground",
+            "traits": [
+                2, 8
+            ],
+            "scaleX": 2000,
+            "scaleY": 2000,
+            "tileScaleX": 5,
+            "tileScaleY": 5,
+            "depth": 1
+        },
+        {
+            "id": 2,
+            "name": "Rock",
+            "traits": [
+                4
+            ],
+            "scaleX": 3,
+            "scaleY": 3,
+            "hitboxScaleX": 2.6,
+            "hitboxScaleY": 2.6
+        },
+        {
+            "id": 3,
+            "name": "Player",
+            "traits": [
+                1,
+                4
+            ],
+            "scaleX": 3.359271,
+            "scaleY": 2.857142857,
+            "hitboxScaleX": 1.00777,
+            "hitboxScaleY": 2,
+            "mass": 10,
+            "runForce": 1500
+        }
+    ],
+    "scenes": [
+        {
+            "id": 1,
+            "name": "Test Scene",
+            "worldWidth": 1000,
+            "worldHeight": 1000,
+            "cameraZoom": 70,
+            "gravity": 9.81,
+            "airDensity": 1.225,
+            "gridCellSize": 100
+        }
+    ],
+    "entities": [
+        {
+            "id": 1,
+            "scene": 1,
+            "template": 1,
+            "x": 0,
+            "y": 0,
+            "asset": "grass"
+        },
+        {
+            "id": 2,
+            "scene": 1,
+            "template": 2,
+            "x": 8,
+            "y": 6,
+            "asset": "rock"
+        },
+        {
+            "id": 3,
+            "scene": 1,
+            "template": 3,
+            "x": 0,
+            "y": 0,
+            "asset": "idle",
+            "isPlayer": true
+        }
+    ]
+}

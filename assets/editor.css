@@ -1,0 +1,74 @@
+
+
+
+body {
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 12px;
+    box-sizing: border-box;
+    gap: 12px;
+}
+
+#game-render-box {
+    flex: 1 1 0px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#fps-counter {
+    top: 20px;
+    right: 20px;
+}
+
+#player-speed {
+    top: 70px;
+    right: 20px;
+}
+
+.debug-info {
+    position: fixed;
+    color: #00ff00;
+    font-family: monospace;
+    font-size: 24px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 16px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* aside {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    width: 20%;
+    color: white;
+    font-family: monospace;
+    font-size: 1.2em;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-group + .field-group {
+    margin-top: 12px;
+}
+
+input {
+    background-color: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    padding: 8px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+section > h2 {
+    margin-top: 0px;
+    font-size: 1.4em;
+} */
