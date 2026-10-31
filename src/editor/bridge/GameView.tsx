@@ -20,10 +20,11 @@ export const GameView: FC = () => {
     const canvas = useRef<HTMLCanvasElement>(null);
     const state = useSelect((state) => state);
     const setEngine = useSetter("engine");
+    const setLoadedSceneId = useSetter("loadedSceneId");
 
     useEffect(() => {
         if (canvas.current instanceof HTMLCanvasElement && !state.engine) {
-            const atlas = new TextureAtlas(state.sprites!, state.assets!);
+            const atlas = new TextureAtlas(state.sprites!, state.animationPack!.animations, state.animationPack!.collections);
             const engine = new Engine(state.game!, state.device!, canvas.current, state.texture!, atlas);
 
             Object.defineProperty(window, "engine", {
@@ -32,7 +33,10 @@ export const GameView: FC = () => {
 
             engine.initialize()
                 .then(() => engine.start())
-                .then(() => setEngine(engine));
+                .then(() => {
+                    setEngine(engine);
+                    setLoadedSceneId(engine.scene.id);
+                });
         }
     }, [canvas.current, state]);
 
@@ -88,22 +92,29 @@ function useReboot(): void {
     }, [game?.maxEntities, game?.maxTemplates]);
 
     useEffect(() => {
-        if (engine instanceof Engine && state.assets && state.sprites && state.texture) {
-            const { assets, sprites, texture } = state;
+        if (engine instanceof Engine && state.animationPack && state.sprites && state.texture) {
+            const { animationPack, sprites, texture } = state;
             engine.stop()
                 .then(() => {
-                    const atlas = new TextureAtlas(sprites, assets);
+                    const atlas = new TextureAtlas(sprites, animationPack.animations, animationPack.collections);
                     return engine.reassignTexture(texture, atlas);
                 })
                 .then(() => engine.start());
         }
-    }, [state.assets, state.sprites, state.texture]);
+    }, [state.animationPack, state.sprites, state.texture]);
 
     useEffect(() => {
         if (engine instanceof Engine && Array.isArray(game?.scenes)) {
             engine.reassignScenes(game.scenes);
         }
     }, [game?.scenes]);
+
+    useEffect(() => {
+        if (engine instanceof Engine && typeof state.loadedSceneId === "number") {
+            engine.entityManager.unloadScene()
+                .then(() => engine.loadScene(state.loadedSceneId!));
+        }
+    }, [state.loadedSceneId]);
 
     useEffect(() => {
         if (engine instanceof Engine && Array.isArray(game?.templates)) {
@@ -119,4 +130,11 @@ function useReboot(): void {
             clearChanged();
         }
     }, [game?.entities]);
+
+    useEffect(() => {
+        if (engine instanceof Engine) {
+            engine.input.setBindings(game?.keyBindings ?? {});
+            clearChanged();
+        }
+    }, [game?.keyBindings]);
 }

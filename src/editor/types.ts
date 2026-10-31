@@ -1,17 +1,18 @@
 import type { Engine } from "../engine";
-import type { AssetMetadata, SpriteMetadata } from "../types/assets";
+import type { AnimationPack, SpriteMetadata } from "../types/assets";
 import type { Game } from "../types/game";
 
 export interface EditorState {
     game?: Game;
     device?: GPUDevice;
     sprites?: SpriteMetadata;
-    assets?: AssetMetadata[];
+    animationPack?: AnimationPack;
     texture?: ImageBitmap;
     engine?: Engine;
     bottomView?: EditorView;
     sideView?: SideView;
     changedEntities?: Set<number>;
+    loadedSceneId?: number;
 }
 
 export enum EditorView {

@@ -1,4 +1,4 @@
-import type { AssetMetadata, SpriteMetadata } from "./src/types/assets";
+import type { AnimationMetadata, SpriteMetadata } from "./src/types/assets";
 
 interface UnityMetadata {
     format: string;
@@ -64,7 +64,7 @@ const sprites: SpriteMetadata = {
     widthScale: [],
     heightScale: [],
 };
-const assets: AssetMetadata[] = [];
+const assets: AnimationMetadata[] = [];
 const assetTypes: AssetType[] = [
     {
         name: "dead",

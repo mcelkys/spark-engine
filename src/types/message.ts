@@ -1,4 +1,4 @@
-import type { AssetMetadata } from "./assets";
+import type { AnimationPack } from "./assets";
 import type { BufferOptions } from "./buffer";
 
 export enum MessageType {
@@ -44,9 +44,9 @@ export interface PauseRequest extends WorkerRequest {
     requestType: WorkerRequestType.PAUSE;
 }
 
-export interface AssetManifestRequest extends WorkerRequest {
+export interface AnimationPackRequest extends WorkerRequest {
     requestType: WorkerRequestType.ASSET_MANIFEST;
-    assets: AssetMetadata[];
+    pack: AnimationPack;
 }
 
 export interface BufferRequest extends WorkerRequest, BufferOptions {
@@ -57,5 +57,5 @@ export interface BufferRequest extends WorkerRequest, BufferOptions {
 
 
 export type ResponseMessage<T> = SuccessMessage<T> | FailuteMessage;
-export type LogicWorkerRequest = StartRequest | PauseRequest | AssetManifestRequest | BufferRequest;
+export type LogicWorkerRequest = StartRequest | PauseRequest | AnimationPackRequest | BufferRequest;
 export type PhysicsWorkerRequest = StartRequest | PauseRequest | BufferRequest;

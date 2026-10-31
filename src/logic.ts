@@ -1,19 +1,20 @@
 import { WorkerRequestType, type LogicWorkerRequest } from "./types/message";
 import { Input, InputMode } from "./types/input";
-import { AssetManifest } from "./textures";
+import { AnimationManifest } from "./textures";
 import { EngineBuffer } from "./util/buffer";
 import { Singleton } from "./util/decorators";
 import { ComputeWorker } from "./util/worker";
+import type { AnimationCollection } from "./types/assets";
 
 @Singleton
 class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
     private buffer: EngineBuffer = EngineBuffer.empty();
-    private assets: AssetManifest = AssetManifest.empty();
+    private animations: AnimationManifest = AnimationManifest.empty();
 
     protected override onRequest(request: LogicWorkerRequest): Promise<unknown> {
         switch (request.requestType) {
             case WorkerRequestType.ASSET_MANIFEST:
-                this.assets = new AssetManifest(request.assets);
+                this.animations = new AnimationManifest(request.pack.animations, request.pack.collections);
                 break;
 
             case WorkerRequestType.BUFFER:
@@ -58,6 +59,8 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
         }
 
         const force = this.buffer.runForce[templateId]!;
+        const animationCollectionId = this.buffer.animations[templateId]!;
+        const animationCollection = this.animations.getCollection(animationCollectionId);
 
         if (inputMode === InputMode.KEYBOARD) {
             const mask = this.buffer.inputBitMask;
@@ -72,13 +75,14 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
 
             // If keys are pressed, calculate movement vector and set run animation
             if (moveX !== 0 || moveY !== 0) {
+                const angle = Math.atan2(moveY, moveX); // Heading in radians
                 this.buffer.force[playerId] = force;
-                this.buffer.angle[playerId] = Math.atan2(moveY, moveX); // Heading in radians
-                this.buffer.asset[playerId] = this.assets.getId("run");
+                this.buffer.angle[playerId] = angle;
+                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollection, angle);
             } else {
                 // Stop movement and switch back to idle animation
                 this.buffer.force[playerId] = 0.0;
-                this.buffer.asset[playerId] = this.assets.getId("idle");
+                this.buffer.animation[playerId] = this.animations.getAnimationId(animationCollection.idle);
             }
         }
 
@@ -98,15 +102,28 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
                 this.buffer.force[playerId] = force * normalizedMagnitude;
 
                 // Invert rawY because standard 2D canvas/world coordinates treat UP as positive
-                this.buffer.angle[playerId] = Math.atan2(-rawY, rawX);
-                this.buffer.asset[playerId] = this.assets.getId("run");
+                const angle = Math.atan2(-rawY, rawX);
+                this.buffer.angle[playerId] = angle;
+                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollection, angle);
             } else {
                 // Stick is centered within deadzone
                 this.buffer.force[playerId] = 0.0;
-                this.buffer.asset[playerId] = this.assets.getId("idle");
+                this.buffer.animation[playerId] = this.animations.getAnimationId(animationCollection.idle);
             }
         }
 
         this.buffer.endWriting();
+    }
+
+    private getDirectionalAnimationId(collection: AnimationCollection, angle: number): number {
+        if (angle >= Math.PI * 0.25 && angle <= Math.PI * 0.75) {
+            return this.animations.getAnimationId(collection.moveUp ?? collection.idle);
+        } else if (angle >= -Math.PI * 0.75 && angle <= -Math.PI * 0.25) {
+            return this.animations.getAnimationId(collection.moveDown ?? collection.idle);
+        } else if (angle > Math.PI * 0.75 || angle < -Math.PI * 0.75) {
+            return this.animations.getAnimationId(collection.moveLeft ?? collection.idle);
+        } else {
+            return this.animations.getAnimationId(collection.moveRight ?? collection.idle);
+        }
     }
 }

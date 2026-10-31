@@ -16,6 +16,7 @@ interface EntityViewProps {
 }
 
 export const EntityView: FC<EntityViewProps> = ({ id }) => {
+    const animationPack = useSelect((state) => state.animationPack);
     const scenes = useSelect((state) => state.game?.scenes ?? []);
     const templates = useSelect((state) => state.game?.templates ?? []);
     const entity = useSelect((state) => state.game!.entities.find((entity) => entity.id === id), [id]);
@@ -28,9 +29,25 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
     const [velocity, setVelocity] = useState(entity?.velocity ?? 0);
     const [angle, setAngle] = useState(entity?.angle ?? 0);
     const [force, setForce] = useState(entity?.force ?? 0);
+    const [animation, setAnimation] = useState(entity?.animation ?? null);
     const sceneOptions = useMemo(() => new Map(scenes.map((scene) => [scene.id, scene.name])), [scenes]);
     const templateOptions = useMemo(() => new Map(templates.map((template) => [template.id, template.name])), [templates]);
     const template = useMemo(() => templates.find((template) => template.id === templateId), [templateId, templates]);
+    const animationOptions = useMemo(() => {
+        const animationCollection = (animationPack?.collections ?? []).find((collection) => collection.id === template?.animations);
+        const animationIds = ([
+            animationCollection?.idle,
+            animationCollection?.moveUp,
+            animationCollection?.moveRight,
+            animationCollection?.moveDown,
+            animationCollection?.moveLeft,
+        ]).filter((id) => typeof id === "number");
+        return new Map(
+            (animationPack?.animations ?? [])
+                .filter((animation) => animationIds.includes(animation.id))
+                .map((animation) => [animation.id, animation.name])
+        );
+    }, [animationPack, template]);
     const submit = useMutation((state) => ({
         ...state,
         game: {
@@ -48,7 +65,7 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
                         force,
                         scene: sceneId ?? -1,
                         template: templateId ?? -1,
-                        asset: "rock",
+                        animation: animation ?? undefined,
                     }
                 ]
                 : (state.game?.entities ?? []).map((ent) => {
@@ -63,6 +80,7 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
                             force,
                             scene: sceneId ?? -1,
                             template: templateId ?? -1,
+                            animation: animation ?? undefined,
                         };
                     }
                     return isPlayer ? { ...ent, isPlayer: false } : ent;
@@ -91,6 +109,9 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
                     <Combobox label="Template" value={templateId} options={templateOptions} onChange={setTemplateId} />
                     <UnitField label="Spawn X coordinate" units="m" type="number" value={x} onChange={handleNumber(setX)} />
                     <UnitField label="Spawn Y coordinate" units="m" type="number" value={y} onChange={handleNumber(setY)} />
+                    <Hide show={template?.traits.includes(Trait.VISIBLE)}>
+                        <Combobox label="Animation at spawn" value={animation} options={animationOptions} onChange={setAnimation} />
+                    </Hide>
                     <Hide show={template?.traits.includes(Trait.MOBILE)}>
                         <UnitField label="Spawn with inital velocity" units="m/s" type="number" value={velocity} onChange={handleNumber(setVelocity)} />
                         <UnitField label="Spawn with initial movement angle" units="rad" type="number" value={angle} onChange={handleNumber(setAngle)} />

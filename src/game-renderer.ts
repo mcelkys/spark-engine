@@ -100,8 +100,9 @@ export class GameRenderer extends Renderer {
 
             const traits = this.buffer.traits[templateId]!;
             const hasStaticDepth = (traits & Trait.HAS_STATIC_DEPTH) > 0;
+            const isVisible = (traits & Trait.VISIBLE) > 0;
 
-            if (!hasStaticDepth) {
+            if (!hasStaticDepth || !isVisible) {
                 continue;
             }
 
@@ -120,8 +121,9 @@ export class GameRenderer extends Renderer {
 
             const traits = this.buffer.traits[templateId]!;
             const hasStaticDepth = (traits & Trait.HAS_STATIC_DEPTH) > 0;
+            const isVisible = (traits & Trait.VISIBLE) > 0;
 
-            if (hasStaticDepth) {
+            if (hasStaticDepth || !isVisible) {
                 continue;
             }
 
@@ -175,9 +177,9 @@ export class GameRenderer extends Renderer {
             const templateId = this.buffer.template[entityId]!;
             const traits = this.buffer.traits[templateId]!
             const isTiled = (traits & Trait.TILED) > 0;
-            const animation = this.buffer.asset[entityId]!;
-            const duration = this.atlas.animationDuration[animation]!;
-            const frames = this.atlas.animationFrames[animation]!;
+            const animationId = this.buffer.animation[entityId]!;
+            const duration = this.atlas.animationDuration[animationId]!;
+            const frames = this.atlas.animationFrames[animationId]!;
             let frameIdx = 0;
 
             if (duration > 0 && frames.length > 1) {

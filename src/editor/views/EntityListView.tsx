@@ -7,10 +7,11 @@ import Delete from "@mui/icons-material/Delete";
 import ListItemText from "@mui/material/ListItemText";
 import { useSelect } from "../state";
 import { useMutation, useSetter } from "../hooks/state";
-import { BottomForm, ButtonGroup, FormContainer, FormHead, FormList, H5, Id } from "../styled";
+import { BottomForm, ButtonGroup, FormContainer, FormHead, FormHeadActions, FormList, H5, Id } from "../styled";
 import { SideViewType } from "../types";
 import { Combobox } from "../components/Combobox";
 import Add from "@mui/icons-material/Add";
+import { Close } from "@mui/icons-material";
 
 export const EntityListView: FC = () => {
     const activeSceneId = useSelect((state) => state.engine?.scene.id);
@@ -18,7 +19,8 @@ export const EntityListView: FC = () => {
     const scenes = useSelect((state) => state.game?.scenes ?? []);
     const templates = useSelect((state) => state.game?.templates ?? []);
     const allEntities = useSelect((state) => state.game?.entities ?? []);
-    const setView = useSetter("sideView");
+    const setSideView = useSetter("sideView");
+    const setBottomView = useSetter("bottomView");
     const options = useMemo(() => new Map(scenes.map((scene) => [scene.id, scene.name])), [scenes]);
     const [selectedId, setSelectedId] = useState(activeSceneId ?? defaultSceneId ?? null);
     const names = useMemo(() => {
@@ -43,12 +45,17 @@ export const EntityListView: FC = () => {
         <BottomForm>
             <FormHead>
                 <H5 variant="h2">Entities</H5>
-                <IconButton onClick={() => setView({
-                    type: SideViewType.ENTITY,
-                    id: allEntities.reduce((id, ent) => id > ent.id ? id : ent.id + 1, 0),
-                })}>
-                    <Add />
-                </IconButton>
+                <FormHeadActions>
+                    <IconButton onClick={() => setSideView({
+                        type: SideViewType.ENTITY,
+                        id: allEntities.reduce((id, ent) => id > ent.id ? id : ent.id + 1, 0),
+                    })}>
+                        <Add />
+                    </IconButton>
+                    <IconButton onClick={() => setBottomView(undefined)}>
+                        <Close />
+                    </IconButton>
+                </FormHeadActions>
             </FormHead>
             <FormContainer>
                 <Combobox
@@ -64,7 +71,7 @@ export const EntityListView: FC = () => {
                     <Fragment key={entity.id}>
                         <ListItem secondaryAction={
                             <ButtonGroup>
-                                <IconButton onClick={() => setView({
+                                <IconButton onClick={() => setSideView({
                                     type: SideViewType.ENTITY,
                                     id: entity.id,
                                 })}>

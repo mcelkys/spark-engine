@@ -10,7 +10,7 @@ type EventHandler<E> = (event: E) => void;
 
 export class InputHandler {
     private buffer: EngineBuffer;
-    private readonly bindings: Map<string, Input>;
+    private bindings: Map<string, Input>;
     private bitMask: number;
     private timer?: Timer;
     private gamepadIndex: number;
@@ -86,6 +86,10 @@ export class InputHandler {
         window.removeEventListener("keyup", this.keyUpHandler, PASSIVE);
         window.removeEventListener("gamepadconnected", this.gamepadConnectedHandler, PASSIVE);
         window.removeEventListener("gamepaddisconnected", this.gamepadDisconnectedHandler, PASSIVE);
+    }
+
+    public setBindings(bindings: KeyBindings): void {
+        this.bindings = new Map(Object.entries(bindings));
     }
 
     public reassignEngineBuffer(buffer: EngineBuffer): void {

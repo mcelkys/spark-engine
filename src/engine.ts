@@ -3,7 +3,7 @@ import { GameRenderer } from "./game-renderer";
 import { InputHandler } from "./input-handler";
 import { LogicClient } from "./logic-client";
 import { PhysicsClient } from "./physics-client";
-import { TextureAtlas } from "./textures";
+import { AnimationManifest, TextureAtlas } from "./textures";
 import type { BufferOptions } from "./types/buffer";
 import type { Game, Scene } from "./types/game";
 import type { Point } from "./types/util";
@@ -15,18 +15,18 @@ export class Engine {
     public scene: Scene;
     public readonly renderer: GameRenderer;
     public readonly entityManager: EntityManager;
-    private atlas: TextureAtlas;
+    public readonly input: InputHandler;
+    private animations: AnimationManifest;
     private readonly game: Game;
     private readonly physics: PhysicsClient;
     private readonly logic: LogicClient;
-    private readonly input: InputHandler;
     private isRunning: boolean;
 
     constructor(game: Game, device: GPUDevice, canvas: HTMLCanvasElement, texture: ImageBitmap, atlas: TextureAtlas) {
         this.game = game;
-        this.atlas = atlas;
+        this.animations = atlas.animationManifest;
         this.buffer = new EngineBuffer(this.bufferOptions);
-        this.entityManager = new EntityManager(this.buffer, this.atlas.assetManifest);
+        this.entityManager = new EntityManager(this.buffer, this.animations);
 
         this.entityManager.loadTemplates(this.game.templates);
         this.scene = this.loadScene(game.scene);
@@ -58,7 +58,7 @@ export class Engine {
 
         await Promise.all([
             this.physics.createBuffer(this.buffer.buffer, this.bufferOptions),
-            this.logic.importAssetManifest(this.atlas.exportAssetMetadata())
+            this.logic.importAssetManifest(this.animations.export())
                 .then(() => this.logic.createBuffer(this.buffer.buffer, this.bufferOptions)),
         ]);
 
@@ -111,11 +111,11 @@ export class Engine {
     }
 
     public async reassignTexture(texture: ImageBitmap, atlas: TextureAtlas): Promise<void> {
-        this.atlas = atlas;
-        this.entityManager.assets = atlas.assetManifest;
+        this.animations = atlas.animationManifest;
+        this.entityManager.animations = atlas.animationManifest;
         await this.entityManager.unloadScene();
         this.loadScene(this.scene.id);
-        await this.logic.importAssetManifest(atlas.exportAssetMetadata());
+        await this.logic.importAssetManifest(atlas.animationManifest.export());
         this.renderer.reassignTexture(texture, atlas);
     }
 
@@ -206,7 +206,7 @@ export class Engine {
             loadFile<Game>(url),
         ]);
         const [atlas, bitmap] = await Promise.all([
-            TextureAtlas.load(game.spriteManifest, game.assetManifest),
+            TextureAtlas.load(game.spriteManifest, game.animationPack),
             GameRenderer.loadBitmap(game.textureAtlas),
         ]);
         const engine = new Engine(game, device, canvas, bitmap, atlas);

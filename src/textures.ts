@@ -1,4 +1,4 @@
-import type { AssetMetadata, SpriteMetadata } from "./types/assets";
+import type { AnimationCollection, AnimationMetadata, AnimationPack, SpriteMetadata } from "./types/assets";
 import { loadFile } from "./util/util";
 
 export class TextureAtlas {
@@ -10,53 +10,32 @@ export class TextureAtlas {
     public readonly heightScale: Float32Array;
     public readonly animationFrames: Uint32Array[];
     public readonly animationDuration: Float32Array;
-    public readonly assetManifest: AssetManifest;
-    private readonly sprites: Map<string, number>;
+    public readonly animationManifest: AnimationManifest;
 
-    constructor(sprites: SpriteMetadata, animations: AssetMetadata[]) {
+    constructor(sprites: SpriteMetadata, animations: AnimationMetadata[], collections: AnimationCollection[]) {
         this.u0 = new Float32Array(sprites.u0);
         this.v0 = new Float32Array(sprites.v0);
         this.u1 = new Float32Array(sprites.u1);
         this.v1 = new Float32Array(sprites.v1);
         this.widthScale = new Float32Array(sprites.widthScale);
         this.heightScale = new Float32Array(sprites.heightScale);
-        this.assetManifest = new AssetManifest(animations);
+        this.animationManifest = new AnimationManifest(animations, collections);
         this.animationFrames = new Array(animations.length);
         this.animationDuration = new Float32Array(animations.length);
-        this.sprites = new Map(sprites.name.map((name, id) => [name, id]));
 
         animations.forEach((animation, index) => {
-            const frames = animation.frames.map((name) => this.sprites.get(name)!);
+            const frames = animation.frames.map((name) => sprites.name.indexOf(name));
             this.animationDuration[index] = animation.duration;
             this.animationFrames[index] = new Uint32Array(frames);
         });
     }
 
-    public getAssetId(name: string): number {
-        return this.assetManifest.getId(name);
-    }
-
-    public exportAssetMetadata(): AssetMetadata[] {
-        const meta: AssetMetadata[] = new Array(this.assetManifest.ids.size);
-        const sprites = new Map(this.sprites.entries().map(([ name, id ]) => [id, name]));
-
-        for (const [ name, id ] of this.assetManifest.ids.entries()) {
-            meta[id] = {
-                name,
-                duration: this.animationDuration[id]!,
-                frames: Array.from(this.animationFrames[id]!).map((i) => sprites.get(i)!),
-            };
-        }
-
-        return meta;
-    }
-
     public static async load(spriteUrl: string, assetUrl: string): Promise<TextureAtlas> {
-        const [sprites, animations] = await Promise.all([
+        const [sprites, pack] = await Promise.all([
             loadFile<SpriteMetadata>(spriteUrl),
-            loadFile<AssetMetadata[]>(assetUrl),
+            loadFile<AnimationPack>(assetUrl),
         ]);
-        return new TextureAtlas(sprites, animations);
+        return new TextureAtlas(sprites, pack.animations, pack.collections);
     }
 
     public static empty(): TextureAtlas {
@@ -69,29 +48,39 @@ export class TextureAtlas {
             widthScale: [],
             heightScale: [],
         };
-        return new TextureAtlas(sprites, []);
+        return new TextureAtlas(sprites, [], []);
     }
 }
 
-export class AssetManifest {
-    public readonly ids: Map<string, number>;
+export class AnimationManifest {
+    private readonly animations: AnimationMetadata[];
+    private readonly collections: Map<number, AnimationCollection>;
+    private readonly animationIds: Map<number, number>;
 
-    constructor(animations: AssetMetadata[]) {
-        this.ids = new Map(animations.map((animation, index) => [
-            animation.name, index,
+    constructor(animations: AnimationMetadata[], collections: AnimationCollection[]) {
+        this.animations = animations;
+        this.collections = new Map(collections.map((collection) => [collection.id, collection]));
+        this.animationIds = new Map(animations.map((animation, index) => [
+            animation.id, index,
         ]));
     }
 
-    public getId(name: string): number {
-        return this.ids.get(name)!;
+    public getAnimationId(id: number): number {
+        return this.animationIds.get(id)!;
     }
 
-    public static async load(url: string): Promise<AssetManifest> {
-        const animations = await loadFile<AssetMetadata[]>(url);
-        return new AssetManifest(animations);
+    public getCollection(id: number): AnimationCollection {
+        return this.collections.get(id)!;
     }
 
-    public static empty(): AssetManifest {
-        return new AssetManifest([]);
+    public export(): AnimationPack {
+        return {
+            animations: this.animations,
+            collections: Array.from(this.collections.values()),
+        };
+    }
+
+    public static empty(): AnimationManifest {
+        return new AnimationManifest([], []);
     }
 }

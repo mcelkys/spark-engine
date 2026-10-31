@@ -1,40 +1,38 @@
-import { Fragment, useState, type FC } from "react";
+import { Fragment, useMemo, useState, type FC } from "react";
 import { useSelect } from "../state";
 import { useMutation, useSetter } from "../hooks/state";
-import { FormAction, FormFields, FormHeading, SideForm } from "../styled";
+import { DialogButtons, FormAction, FormFields, FormHeading, SideForm } from "../styled";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { handleNumber, handleString } from "../util/input";
 import { Trait } from "../../types/entity";
-import { styled } from "@mui/material/styles";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
-import DialogActions, { type DialogActionsProps } from "@mui/material/DialogActions";
 import { TagField } from "../components/TagField";
 import { UnitField } from "../components/UnitField";
 import { Hide } from "../components/Hide";
 import { TagDisplay } from "../components/TagDisplay";
+import { Combobox } from "../components/Combobox";
 
 const TRAITS = new Map<Trait, string>([
     [Trait.MOBILE, "Mobile"],
     [Trait.TANGIBLE, "Tangible"],
     [Trait.TILED, "Tiled"],
     [Trait.HAS_STATIC_DEPTH, "Static depth"],
+    [Trait.VISIBLE, "Visible"],
 ]);
 
 interface TemplateViewProps {
     id: number;
 }
 
-const TraitActions = styled(DialogActions)<DialogActionsProps>(({ theme }) => ({
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-}));
-
 export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
+    const animationPack = useSelect((state) => state.animationPack);
     const template = useSelect((state) => state.game!.templates.find((template) => template.id === id), [id]);
     const setView = useSetter("sideView");
+    const animationOptions = useMemo(() => {
+        return new Map((animationPack?.collections ?? []).map((collection) => [collection.id, collection.name]));
+    }, [animationPack]);
     const [name, setName] = useState(template?.name ?? "");
     const [traits, setTraits] = useState(new Set(template?.traits));
     const [scaleX, setScaleX] = useState(template?.scaleX ?? 0);
@@ -47,16 +45,18 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
     const [dragCoefficient, setDragCoefficient] = useState(template?.dragCoefficient ?? 1.2);
     const [runForce, setRunForce] = useState(template?.runForce ?? 0);
     const [depth, setDepth] = useState(template?.depth ?? 0);
+    const [animations, setAnimations] = useState(template?.animations ?? null);
     const [isAddOpen, setAddOpen] = useState(false);
     const [selectedTraits, setSelectedTraits] = useState<Set<Trait>>(new Set());
     const submit = useMutation((state) => ({
         ...state,
         game: {
             ...state.game!,
-            templates: (state.game?.templates ?? []).map((t) => {
-                if (t.id === template?.id) {
-                    return {
-                        ...t,
+            templates: !template 
+                ? [
+                    ...(state.game?.templates ?? []),
+                    {
+                        id,
                         name,
                         traits: Array.from(traits),
                         scaleX,
@@ -69,10 +69,30 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                         dragCoefficient,
                         runForce,
                         depth,
-                    };
-                }
-                return t;
-            }),
+                        animations: animations ?? undefined,
+                    },
+                ] 
+                : (state.game?.templates ?? []).map((t) => {
+                    if (t.id === template?.id) {
+                        return {
+                            ...t,
+                            name,
+                            traits: Array.from(traits),
+                            scaleX,
+                            scaleY,
+                            tileScaleX,
+                            tileScaleY,
+                            hitboxScaleX,
+                            hitboxScaleY,
+                            mass,
+                            dragCoefficient,
+                            runForce,
+                            depth,
+                            animations: animations ?? undefined,
+                        };
+                    }
+                    return t;
+                }),
         },
     }));
     const confirm = () => {
@@ -91,7 +111,11 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
     return (
         <Fragment>
             <SideForm>
-                <FormHeading variant="h2">{template?.name}</FormHeading>
+                {template ? (
+                    <FormHeading variant="h2">{template?.name}</FormHeading>
+                ) : (
+                    <FormHeading variant="h2">New template</FormHeading>
+                )}
                 <TagDisplay
                     values={traits}
                     labels={TRAITS}
@@ -104,8 +128,11 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                 />
                 <FormFields>
                     <TextField label="Template name" value={name} onChange={handleString(setName)} />
-                    <UnitField label="Visual width" units="m" type="number" value={scaleX} onChange={handleNumber(setScaleX)} />
-                    <UnitField label="Visual height" units="m" type="number" value={scaleY} onChange={handleNumber(setScaleY)} />
+                    <UnitField label="Width" units="m" type="number" value={scaleX} onChange={handleNumber(setScaleX)} />
+                    <UnitField label="Height" units="m" type="number" value={scaleY} onChange={handleNumber(setScaleY)} />
+                    <Hide show={traits.has(Trait.VISIBLE)}>
+                        <Combobox label="Animation collection" value={animations} options={animationOptions} onChange={setAnimations} />
+                    </Hide>
                     <Hide show={traits.has(Trait.TILED)}>
                         <UnitField label="Tile width" units="m" type="number" value={tileScaleX} onChange={handleNumber(setTileScaleX)} />
                         <UnitField label="Tile height" units="m" type="number" value={tileScaleY} onChange={handleNumber(setTileScaleY)} />
@@ -138,10 +165,10 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                         onChange={setSelectedTraits}
                     />
                 </DialogContent>
-                <TraitActions>
+                <DialogButtons>
                     <Button onClick={closeAddDialog}>Cancel</Button>
                     <Button variant="contained" onClick={addTraits}>Add</Button>
-                </TraitActions>
+                </DialogButtons>
             </Dialog>
         </Fragment>
     );

@@ -3,6 +3,8 @@ import Box, { type BoxProps } from "@mui/material/Box";
 import Typography, { type TypographyProps } from "@mui/material/Typography";
 import Avatar, { type AvatarProps } from "@mui/material/Avatar";
 import List, { type ListProps } from "@mui/material/List";
+import DialogActions, { type DialogActionsProps } from "@mui/material/DialogActions";
+import MuiButtonGroup, { type ButtonGroupProps } from "@mui/material/ButtonGroup";
 
 export const H4 = styled(Typography)<TypographyProps>(({ theme }) => ({
     ...theme.typography.h4,
@@ -66,6 +68,10 @@ export const FormHead = styled(FormContainer)<BoxProps>(({ theme }) => ({
     gap: theme.spacing(3),
 }));
 
+export const FormHeadActions = styled(MuiButtonGroup)<ButtonGroupProps>(({ theme }) => ({
+    gap: theme.spacing(1),
+}));
+
 export const FormBody = styled(FormContainer)<BoxProps>({
     flex: 1,
     overflowY: "auto",
@@ -113,3 +119,8 @@ export const Id = styled(Avatar)<AvatarProps>(({ theme }) => ({
     fontWeight: theme.typography.fontWeightBold,
 }));
 
+export const DialogButtons = styled(DialogActions)<DialogActionsProps>(({ theme }) => ({
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+}));

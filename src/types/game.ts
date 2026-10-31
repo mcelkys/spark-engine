@@ -5,7 +5,7 @@ export interface Game {
     name: string;
     maxEntities: number;
     maxTemplates: number;
-    assetManifest: string;
+    animationPack: string;
     spriteManifest: string;
     textureAtlas: string;
     templates: Template[];
@@ -26,10 +26,9 @@ export interface Scene {
     gridCellSize: number;
 }
 
-export interface Entity extends Omit<EntityOptions, "asset"> {
+export interface Entity extends EntityOptions {
     id: number;
     scene: number;
-    asset: string;
     isPlayer?: boolean;
 }
 

@@ -11,7 +11,7 @@ export class EngineBuffer {
     public static readonly ENTITY_F32_COUNT = 6;
     public static readonly ENTITY_U16_COUNT = 2;
     public static readonly TEMPLATE_F32_COUNT = 10;
-    public static readonly TEMPLATE_U16_COUNT = 1;
+    public static readonly TEMPLATE_U16_COUNT = 2;
 
     private isWaitingForLock: boolean;
     private readonly pendingLocks: Map<number, VoidFunction>;
@@ -25,6 +25,7 @@ export class EngineBuffer {
 
     // Template
     public readonly traits: Uint16Array;
+    public readonly animations: Uint16Array;
     public readonly scaleX: Float32Array;
     public readonly scaleY: Float32Array;
     public readonly tileScaleX: Float32Array;
@@ -38,7 +39,7 @@ export class EngineBuffer {
 
     // Entity
     public readonly template: Uint16Array;
-    public readonly asset: Uint16Array;
+    public readonly animation: Uint16Array;
     public readonly x: Float32Array;
     public readonly y: Float32Array;
     public readonly velocity: Float32Array;
@@ -84,6 +85,7 @@ export class EngineBuffer {
 
         // Template
         this.traits = allocator.u16(options.maxTemplates);
+        this.animations = allocator.u16(options.maxTemplates);
         this.scaleX = allocator.f32(options.maxTemplates);
         this.scaleY = allocator.f32(options.maxTemplates);
         this.tileScaleX = allocator.f32(options.maxTemplates);
@@ -97,7 +99,7 @@ export class EngineBuffer {
 
         // Entity
         this.template = allocator.u16(options.maxEntities);
-        this.asset = allocator.u16(options.maxEntities);
+        this.animation = allocator.u16(options.maxEntities);
         this.x = allocator.f32(options.maxEntities);
         this.y = allocator.f32(options.maxEntities);
         this.velocity = allocator.f32(options.maxEntities);
@@ -353,7 +355,7 @@ export class EngineBuffer {
         this.y[idx] = entity.y;
         this.velocity[idx] = entity.velocity ?? 0.0;
         this.angle[idx] = entity.angle ?? 0.0;
-        this.asset[idx] = entity.asset;
+        this.animation[idx] = entity.animation ?? 0;
         this.animationProgress[idx] = 0.0;
         this.force[idx] = entity.force ?? 0.0;
     }
@@ -369,7 +371,7 @@ export class EngineBuffer {
         this.y.copyWithin(idx, nextIdx, count);
         this.velocity.copyWithin(idx, nextIdx, count);
         this.angle.copyWithin(idx, nextIdx, count);
-        this.asset.copyWithin(idx, nextIdx, count);
+        this.animation.copyWithin(idx, nextIdx, count);
         this.animationProgress.copyWithin(idx, nextIdx, count);
         this.force.copyWithin(idx, nextIdx, count);
 
@@ -378,7 +380,7 @@ export class EngineBuffer {
         this.y[lastIdx] = 0.0;
         this.velocity[lastIdx] = 0.0;
         this.angle[lastIdx] = 0.0;
-        this.asset[lastIdx] = 0;
+        this.animation[lastIdx] = 0;
         this.animationProgress[lastIdx] = 0.0;
         this.force[lastIdx] = 0.0;
 
@@ -399,7 +401,7 @@ export class EngineBuffer {
         this.y.fill(0.0, 0, count);
         this.velocity.fill(0.0, 0, count);
         this.angle.fill(0.0, 0, count);
-        this.asset.fill(0, 0, count);
+        this.animation.fill(0, 0, count);
         this.animationProgress.fill(0.0, 0, count);
         this.force.fill(0.0, 0, count);
         this.playerId = -1;
@@ -433,6 +435,7 @@ export class EngineBuffer {
         this.dragCoefficient[idx] = template.dragCoefficient ?? 1.2;
         this.runForce[idx] = template.runForce ?? 0.0;
         this.depth[idx] = template.depth ?? 0.0;
+        this.animations[idx] = template.animations ?? 0;
     }
 
     public removeTemplate(idx: number): void {
@@ -451,6 +454,7 @@ export class EngineBuffer {
         this.dragCoefficient.copyWithin(idx, nextIdx, count);
         this.runForce.copyWithin(idx, nextIdx, count);
         this.depth.copyWithin(idx, nextIdx, count);
+        this.animations.copyWithin(idx, nextIdx, count);
         
         this.traits[lastIdx] = 0;
         this.scaleX[lastIdx] = 0.0;
@@ -463,6 +467,7 @@ export class EngineBuffer {
         this.dragCoefficient[lastIdx] = 0.0;
         this.runForce[lastIdx] = 0.0;
         this.depth[lastIdx] = 0.0;
+        this.animations[lastIdx] = 0;
 
         this.templateCount = lastIdx;
     }
@@ -480,6 +485,7 @@ export class EngineBuffer {
         this.dragCoefficient.fill(0.0, 0, count);
         this.runForce.fill(0.0, 0, count);
         this.depth.fill(0.0, 0, count);
+        this.animations.fill(0, 0, count);
         this.templateCount = 0;
     }
 

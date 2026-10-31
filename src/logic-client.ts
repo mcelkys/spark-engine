@@ -1,15 +1,15 @@
-import type { AssetMetadata } from "./types/assets";
+import type { AnimationPack } from "./types/assets";
 import type { BufferOptions } from "./types/buffer";
 import { MessageType, WorkerRequestType, type LogicWorkerRequest } from "./types/message";
 import { WorkerClient } from "./util/worker-client";
 
 export class LogicClient extends WorkerClient<LogicWorkerRequest> {
-    public importAssetManifest(assets: AssetMetadata[]): Promise<void> {
+    public importAssetManifest(pack: AnimationPack): Promise<void> {
         return this.send({
             messageType: MessageType.REQUEST,
             requestType: WorkerRequestType.ASSET_MANIFEST,
             id: this.nextId,
-            assets,
+            pack,
         });
     }
 

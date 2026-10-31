@@ -25,10 +25,11 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
         ...state,
         game: {
             ...state.game!,
-            scenes: (state.game?.scenes ?? []).map((s) => {
-                if (s.id === scene?.id) {
-                    return {
-                        ...s,
+            scenes: !scene 
+                ? [
+                    ...(state.game?.scenes ?? []),
+                    {
+                        id,
                         name,
                         worldWidth,
                         worldHeight,
@@ -36,10 +37,23 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
                         gravity,
                         airDensity,
                         gridCellSize,
-                    };
-                }
-                return s;
-            }),
+                    },
+                ] 
+                : (state.game?.scenes ?? []).map((s) => {
+                    if (s.id === scene?.id) {
+                        return {
+                            ...s,
+                            name,
+                            worldWidth,
+                            worldHeight,
+                            cameraZoom,
+                            gravity,
+                            airDensity,
+                            gridCellSize,
+                        };
+                    }
+                    return s;
+                }),
         },
     }));
     const confirm = () => {
@@ -49,7 +63,11 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
 
     return (
         <SideForm>
-            <FormHeading variant="h2">{scene?.name}</FormHeading>
+            {scene ? (
+                <FormHeading variant="h2">{scene?.name}</FormHeading>
+            ) : (
+                <FormHeading variant="h2">New scene</FormHeading>
+            )}
             <FormFields>
                 <TextField label="Scene name" value={name} onChange={handleString(setName)} />
                 <UnitField label="World width" units="m" type="number" value={worldWidth} onChange={handleNumber(setWorldWidth)} />

@@ -1,27 +1,29 @@
-import { AssetManifest } from "./textures";
+import { AnimationManifest } from "./textures";
 import type { Entity, Template } from "./types/game";
 import type { Point } from "./types/util";
 import { EngineBuffer } from "./util/buffer";
 
 export class EntityManager {
     public buffer: EngineBuffer;
-    public assets: AssetManifest;
+    public animations: AnimationManifest;
     private readonly templates: Map<number, number>;
     private readonly entities: Map<number, number>;
 
 
-    constructor(buffer: EngineBuffer, assets: AssetManifest) {
+    constructor(buffer: EngineBuffer, animations: AnimationManifest) {
         this.buffer = buffer;
         this.templates = new Map();
         this.entities = new Map();
-        this.assets = assets;
+        this.animations = animations;
     }
 
     public spawnEntitity(entity: Entity): number {
         const entityId = this.buffer.storeEntity({
             ...entity,
             template: this.templates.get(entity.template)!,
-            asset: this.assets.getId(entity.asset),
+            animation: typeof entity.animation === "number" 
+                ? this.animations.getAnimationId(entity.animation)
+                : undefined,
         });
 
         if (entityId < 0) {
@@ -186,7 +188,7 @@ export class EntityManager {
                     this.buffer.setEntityValues(currentId, {
                         ...entity,
                         template: templateId,
-                        asset: this.buffer.asset[currentId]!,
+                        animation: this.buffer.animation[currentId]!,
                     });
                 }
             } else {

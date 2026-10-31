@@ -9,8 +9,24 @@ export interface SpriteMetadata {
     heightScale: number[];
 }
 
-export interface AssetMetadata {
+export interface AnimationMetadata {
+    id: number;
     name: string;
     duration: number;
     frames: string[];
+}
+
+export interface AnimationCollection {
+    id: number;
+    name: string;
+    idle: number;
+    moveUp?: number;
+    moveRight?: number;
+    moveDown?: number;
+    moveLeft?: number;
+}
+
+export interface AnimationPack {
+    animations: AnimationMetadata[];
+    collections: AnimationCollection[];
 }

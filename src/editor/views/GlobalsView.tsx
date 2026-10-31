@@ -9,7 +9,7 @@ export const GlobalsView: FC = () => {
     const game = useSelect((state) => state.game);
     const setView = useSetter("bottomView");
     const [ name, setName ] = useState(game?.name ?? "");
-    const [ assetManifest, setAssetManifest ] = useState(game?.assetManifest ?? "");
+    const [ animationPack, setAnimationPack ] = useState(game?.animationPack ?? "");
     const [ spriteManifest, setSpriteManifest ] = useState(game?.spriteManifest ?? "");
     const [ textureAtlas, setTextureAtlas ] = useState(game?.textureAtlas ?? "");
     const [ maxEntities, setMaxEntities ] = useState(game?.maxEntities ?? 0);
@@ -22,7 +22,7 @@ export const GlobalsView: FC = () => {
             name,
             maxEntities,
             maxTemplates,
-            assetManifest,
+            animationPack,
             spriteManifest,
             textureAtlas,
             scene,
@@ -37,20 +37,20 @@ export const GlobalsView: FC = () => {
         <BottomForm>
             <FormHeading variant="h2">Global game settings</FormHeading>
             <FormFields>
-                <TextField label="Game name" value={name} onChange={handleString(setName)} />
+                <TextField label="Game name" value={name} onChange={handleString(setName)} required />
                 <FormControl>
                     <InputLabel id="initial-scene-label">Initial scene</InputLabel>
-                    <Select labelId="initial-scene-label" label="Initial scene" value={scene} onChange={(event) => setScene(event.target.value)}>
+                    <Select labelId="initial-scene-label" label="Initial scene" value={scene} onChange={(event) => setScene(event.target.value)} required>
                         {game?.scenes.map((scene) => (
                             <MenuItem key={scene.id} value={scene.id}>{scene.name}</MenuItem>
                         ))}
                     </Select>
                 </FormControl>
-                <TextField type="number" label="Maximum number of entities" value={maxEntities} onChange={handleNumber(setMaxEntities)} />
-                <TextField type="number" label="Maximum number of templates" value={maxTemplates} onChange={handleNumber(setMaxTemplates)} />
-                <TextField label="Asset manifest file" value={assetManifest} onChange={handleString(setAssetManifest)} />
-                <TextField label="Sprite manifest file" value={spriteManifest} onChange={handleString(setSpriteManifest)} />
-                <TextField label="Texture atlas file" value={textureAtlas} onChange={handleString(setTextureAtlas)} />
+                <TextField type="number" label="Maximum number of entities" value={maxEntities} onChange={handleNumber(setMaxEntities)} required />
+                <TextField type="number" label="Maximum number of templates" value={maxTemplates} onChange={handleNumber(setMaxTemplates)} required />
+                <TextField label="Animation pack file" value={animationPack} onChange={handleString(setAnimationPack)} required />
+                <TextField label="Sprite manifest file" value={spriteManifest} onChange={handleString(setSpriteManifest)} required />
+                <TextField label="Texture atlas file" value={textureAtlas} onChange={handleString(setTextureAtlas)} required />
             </FormFields>
             <FormAction>
                 <Button onClick={() => setView(undefined)}>Cancel</Button>

@@ -17,6 +17,7 @@ export abstract class Renderer {
     private readonly buffers: Map<string, GPUBuffer>;
     private readonly clearColor: GPUColor;
     private lastTime: DOMHighResTimeStamp;
+    private rendererId: number;
     private isRendering: boolean;
 
     protected constructor(device: GPUDevice, buffer: EngineBuffer, options: RendererOptions) {
@@ -28,6 +29,7 @@ export abstract class Renderer {
         this.clearColor = options.clearColor;
         this.buffers = new Map();
         this.lastTime = 0;
+        this.rendererId = 0;
         this.isRendering = false;
         this.sampler = device.createSampler({
             magFilter: "linear",
@@ -111,13 +113,14 @@ export abstract class Renderer {
             this.device.queue.submit([
                 encoder.finish(),
             ]);
-            requestAnimationFrame(onFrame);
+            this.rendererId = requestAnimationFrame(onFrame);
         };
-        requestAnimationFrame(onFrame);
+        this.rendererId = requestAnimationFrame(onFrame);
     }
 
     public pause(): void {
         this.isRendering = false;
+        cancelAnimationFrame(this.rendererId);
     }
 
     protected abstract describeVertexBuffers(): VertexBufferDescriptor[];

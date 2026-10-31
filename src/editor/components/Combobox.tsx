@@ -17,7 +17,7 @@ export function Combobox<T>({ label, value, options, onChange }: ComboboxProps<T
             autoHighlight
             value={value}
             options={opts}
-            getOptionLabel={(option) => options.get(option)!}
+            getOptionLabel={(option) => options.get(option) ?? "Invalid"}
             renderInput={(props) => <TextField {...props} label={label} />}
             onChange={(_, val) => onChange(val)}
         />

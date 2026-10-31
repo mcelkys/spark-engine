@@ -8,12 +8,18 @@ import ListItemText from "@mui/material/ListItemText";
 import { useSelect } from "../state";
 import { useMutation, useSetter } from "../hooks/state";
 import { SideViewType } from "../types";
-import { BottomForm, ButtonGroup, FormHeading, FormList, Id } from "../styled";
+import { BottomForm, ButtonGroup, FormHead, FormHeadActions, FormList, H5, Id } from "../styled";
+import { Add, Close, PlayArrow } from "@mui/icons-material";
+import { Hide } from "../components/Hide";
+import Chip from "@mui/material/Chip";
 
 
 export const SceneListView: FC = () => {
+    const loadedSceneId = useSelect((state) => state.loadedSceneId);
     const scenes = useSelect((state) => state.game?.scenes ?? []);
-    const setView = useSetter("sideView");
+    const setSideView = useSetter("sideView");
+    const setBottomView = useSetter("bottomView");
+    const loadScene = useSetter("loadedSceneId");
     const remove = useMutation<[number]>((state, id) => ({
         ...state,
         game: {
@@ -24,14 +30,32 @@ export const SceneListView: FC = () => {
 
     return (
         <BottomForm>
-            <FormHeading variant="h2">Scenes</FormHeading>
+            <FormHead>
+                <H5>Scenes</H5>
+                <FormHeadActions>
+                    <IconButton onClick={() => setSideView({
+                        type: SideViewType.SCENE,
+                        id: scenes.reduce((id, scene) => id > scene.id ? id : scene.id + 1, 0)
+                    })}>
+                        <Add />
+                    </IconButton>
+                    <IconButton onClick={() => setBottomView(undefined)}>
+                        <Close />
+                    </IconButton>
+                </FormHeadActions>
+            </FormHead>
             <FormList>
                 <Divider />
                 {scenes.map((scene) => (
                     <Fragment key={scene.id}>
                         <ListItem secondaryAction={
                             <ButtonGroup>
-                                <IconButton onClick={() => setView({
+                                <Hide show={scene.id !== loadedSceneId}>
+                                    <IconButton onClick={() => loadScene(scene.id)}>
+                                        <PlayArrow />
+                                    </IconButton>
+                                </Hide>
+                                <IconButton onClick={() => setSideView({
                                     type: SideViewType.SCENE,
                                     id: scene.id,
                                 })}>
@@ -46,6 +70,9 @@ export const SceneListView: FC = () => {
                                 <Fragment>
                                     <Id component="span">{scene.id}</Id>
                                     {scene.name}
+                                    <Hide show={scene.id === loadedSceneId}>
+                                        <Chip label="Currently loaded" sx={(theme) => ({ marginLeft: theme.spacing(2) })} />
+                                    </Hide>
                                 </Fragment>
                             } />
                         </ListItem>

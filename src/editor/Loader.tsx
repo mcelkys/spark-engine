@@ -3,7 +3,7 @@ import { useSelect } from "./state";
 import { GameRenderer } from "../game-renderer";
 import { loadFile } from "../util/util";
 import type { Game } from "../types/game";
-import type { AssetMetadata, SpriteMetadata } from "../types/assets";
+import type { AnimationPack, SpriteMetadata } from "../types/assets";
 import { Renderer } from "../render/renderer";
 import { useSetter } from "./hooks/state";
 import { Box, CircularProgress, type BoxProps } from "@mui/material";
@@ -27,7 +27,7 @@ export const Loader: FC<LoaderProps> = ({ url, children }) => {
     const setDevice = useSetter("device");
     const setGame = useSetter("game");
     const setSprites = useSetter("sprites");
-    const setAssets = useSetter("assets");
+    const setAnimationPack = useSetter("animationPack");
     const setTexture = useSetter("texture");
     const game = state.game;
 
@@ -41,11 +41,11 @@ export const Loader: FC<LoaderProps> = ({ url, children }) => {
     }, [url]);
 
     useEffect(() => {
-        if (game?.assetManifest) {
-            loadFile<AssetMetadata[]>(game.assetManifest)
-                .then((assets) => setAssets(assets));
+        if (game?.animationPack) {
+            loadFile<AnimationPack>(game.animationPack)
+                .then((animations) => setAnimationPack(animations));
         }
-    }, [game?.assetManifest]);
+    }, [game?.animationPack]);
 
     useEffect(() => {
         if (game?.spriteManifest) {
@@ -61,7 +61,7 @@ export const Loader: FC<LoaderProps> = ({ url, children }) => {
         }
     }, [game?.textureAtlas]);
 
-    if (state.device && state.game && state.sprites && state.assets && state.texture) {
+    if (state.device && state.game && state.sprites && state.animationPack && state.texture) {
         return (
             <Fragment>{children}</Fragment>
         );

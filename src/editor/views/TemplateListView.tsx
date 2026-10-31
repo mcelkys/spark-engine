@@ -7,13 +7,15 @@ import Delete from "@mui/icons-material/Delete";
 import ListItemText from "@mui/material/ListItemText";
 import { useSelect } from "../state";
 import { useMutation, useSetter } from "../hooks/state";
-import { BottomForm, ButtonGroup, FormHeading, FormList, Id } from "../styled";
+import { BottomForm, ButtonGroup, FormHead, FormHeadActions, FormList, H5, Id } from "../styled";
 import { SideViewType } from "../types";
+import { Add, Close } from "@mui/icons-material";
 
 
 export const TemplateListView: FC = () => {
     const templates = useSelect((state) => state.game?.templates ?? []);
-    const setView = useSetter("sideView");
+    const setSideView = useSetter("sideView");
+    const setBottomView = useSetter("bottomView");
     const remove = useMutation<[number]>((state, id) => ({
         ...state,
         game: {
@@ -24,14 +26,27 @@ export const TemplateListView: FC = () => {
 
     return (
         <BottomForm>
-            <FormHeading variant="h2">Templates</FormHeading>
+            <FormHead>
+                <H5>Templates</H5>
+                <FormHeadActions>
+                    <IconButton onClick={() => setSideView({
+                        type: SideViewType.TEMPLATE,
+                        id: templates.reduce((id, template) => id > template.id ? id : template.id + 1, 0),
+                    })}>
+                        <Add />
+                    </IconButton>
+                    <IconButton onClick={() => setBottomView(undefined)}>
+                        <Close />
+                    </IconButton>
+                </FormHeadActions>
+            </FormHead>
             <FormList>
                 <Divider />
                 {templates.map((template) => (
                     <Fragment key={template.id}>
                         <ListItem secondaryAction={
                             <ButtonGroup>
-                                <IconButton onClick={() => setView({
+                                <IconButton onClick={() => setSideView({
                                     type: SideViewType.TEMPLATE,
                                     id: template.id,
                                 })}>
