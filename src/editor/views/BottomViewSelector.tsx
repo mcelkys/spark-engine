@@ -6,6 +6,7 @@ import { SceneListView } from "./SceneListView";
 import { TemplateListView } from "./TemplateListView";
 import { EntityListView } from "./EntityListView";
 import { KeyBindingView } from "./KeyBindingView";
+import { AnimationListView } from "./AnimationListView";
 
 export const BottomViewSelector: FC = () => {
     const view = useSelect((state) => state.bottomView);
@@ -25,6 +26,9 @@ export const BottomViewSelector: FC = () => {
 
         case EditorView.KEY_BINDINGS:
             return <KeyBindingView />;
+
+        case EditorView.ANIMATIONS:
+            return <AnimationListView />;
     
         default:
             return null;

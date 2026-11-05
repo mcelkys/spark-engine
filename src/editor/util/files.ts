@@ -15,3 +15,16 @@ export function pickFile(accept?: string, multiple = false): Promise<FileList | 
         input.click();
     });
 }
+
+export function readFile(file: File): Promise<ArrayBuffer> {
+    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+        reader.addEventListener("load", () => {
+            resolve(reader.result as ArrayBuffer);
+        }, { passive: true, once: true });
+        reader.addEventListener("error", () => {
+            reject(reader.error);
+        }, { passive: true, once: true });
+        reader.readAsArrayBuffer(file);
+    });
+}

@@ -7,7 +7,9 @@ import { useSetter } from "../hooks/state";
 import { EditorView } from "../types";
 import { Panel, Spacer } from "../styled";
 import MenuIcon from "@mui/icons-material/Menu";
-import { pickFile } from "../util/files";
+import { pickFile, readFile } from "../util/files";
+import type { UnityMetadata } from "../../types/unity";
+import { translateUnityMetadata } from "../util/unity";
 
 const Aside = styled(Panel)({
     minWidth: 300,
@@ -20,6 +22,7 @@ const Toolbar = styled(ButtonGroup)(({ theme }) => ({
 export const MainControls: FC = () => {
     const setView = useSetter("bottomView");
     const setBitmap = useSetter("texture");
+    const setSpriteManifest = useSetter("sprites");
     const menuAnchor = useRef<HTMLButtonElement>(null);
     const [ menuOpen, setMenuOpen ] = useState(false);
 
@@ -36,7 +39,25 @@ export const MainControls: FC = () => {
             });
     };
 
-    
+    const importSpriteManifest = () => {
+        setMenuOpen(false);
+        pickFile("application/json")
+            .then((files) => {
+                if (files && files.length === 1) {
+                    return readFile(files[0]!);
+                }
+            })
+            .then((buffer) => {
+                const decoder = new TextDecoder();
+
+                if (buffer) {
+                    const text = decoder.decode(buffer);
+                    const json = JSON.parse(text) as UnityMetadata;
+                    const manifest = translateUnityMetadata(json);
+                    setSpriteManifest(manifest);
+                }
+            });
+    };
 
     return (
         <Fragment>
@@ -48,7 +69,7 @@ export const MainControls: FC = () => {
                 </Toolbar>
                 <Menu anchorEl={menuAnchor.current} open={menuOpen} onClose={() => setMenuOpen(false)}>
                     <MenuItem onClick={importTextureAtlas}>Import texture atlas</MenuItem>
-                    <MenuItem>Import sprite manifest</MenuItem>
+                    <MenuItem onClick={importSpriteManifest}>Import sprite manifest</MenuItem>
                 </Menu>
                 <List>
                     <ListItem disablePadding>
@@ -76,13 +97,22 @@ export const MainControls: FC = () => {
                             <ListItemText primary="Entities" />
                         </ListItemButton>
                     </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setView(EditorView.ANIMATIONS)}>
+                            <ListItemText primary="Animations" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setView(EditorView.ANIMATION_COLLECTIONS)}>
+                            <ListItemText primary="Animation collections" />
+                        </ListItemButton>
+                    </ListItem>
                 </List>
                 <Spacer />
                 <PlayControls />
                 <Divider variant="middle" />
                 <RateDisplay />
             </Aside>
-            {/* <SpriteDialog open={showSprites} onClose={() => setShowSprites(false)} /> */}
         </Fragment>
     );
 };

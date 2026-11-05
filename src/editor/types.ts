@@ -21,12 +21,15 @@ export enum EditorView {
     TEMPLATES,
     KEY_BINDINGS,
     ENTITIES,
+    ANIMATIONS,
+    ANIMATION_COLLECTIONS,
 }
 
 export enum SideViewType {
     SCENE,
     TEMPLATE,
     ENTITY,
+    ANIMATION_COLLECTION,
 }
 
 export interface BaseSideView {
