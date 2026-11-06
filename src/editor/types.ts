@@ -38,7 +38,7 @@ export interface BaseSideView {
 }
 
 export interface GenericSideView extends BaseSideView {
-    type: SideViewType.SCENE | SideViewType.TEMPLATE | SideViewType.ENTITY;
+    type: SideViewType.SCENE | SideViewType.TEMPLATE | SideViewType.ENTITY | SideViewType.ANIMATION_COLLECTION;
 }
 
 export type SideView = GenericSideView;

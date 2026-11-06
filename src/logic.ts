@@ -4,7 +4,7 @@ import { AnimationManifest } from "./textures";
 import { EngineBuffer } from "./util/buffer";
 import { Singleton } from "./util/decorators";
 import { ComputeWorker } from "./util/worker";
-import type { AnimationCollection } from "./types/assets";
+import { AnimationPurpose, type AnimationCollection } from "./types/assets";
 
 @Singleton
 class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
@@ -60,7 +60,6 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
 
         const force = this.buffer.runForce[templateId]!;
         const animationCollectionId = this.buffer.animations[templateId]!;
-        const animationCollection = this.animations.getCollection(animationCollectionId);
 
         if (inputMode === InputMode.KEYBOARD) {
             const mask = this.buffer.inputBitMask;
@@ -78,11 +77,12 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
                 const angle = Math.atan2(moveY, moveX); // Heading in radians
                 this.buffer.force[playerId] = force;
                 this.buffer.angle[playerId] = angle;
-                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollection, angle);
+                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollectionId, angle);
             } else {
                 // Stop movement and switch back to idle animation
+                const animationId = this.animations.getAnimationByPurpose(animationCollectionId, AnimationPurpose.IDLE);
                 this.buffer.force[playerId] = 0.0;
-                this.buffer.animation[playerId] = this.animations.getAnimationId(animationCollection.idle);
+                this.buffer.animation[playerId] = this.animations.getAnimationId(animationId);
             }
         }
 
@@ -104,26 +104,31 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
                 // Invert rawY because standard 2D canvas/world coordinates treat UP as positive
                 const angle = Math.atan2(-rawY, rawX);
                 this.buffer.angle[playerId] = angle;
-                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollection, angle);
+                this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollectionId, angle);
             } else {
                 // Stick is centered within deadzone
+                const animationId = this.animations.getAnimationByPurpose(animationCollectionId, AnimationPurpose.IDLE);
                 this.buffer.force[playerId] = 0.0;
-                this.buffer.animation[playerId] = this.animations.getAnimationId(animationCollection.idle);
+                this.buffer.animation[playerId] = this.animations.getAnimationId(animationId);
             }
         }
 
         this.buffer.endWriting();
     }
 
-    private getDirectionalAnimationId(collection: AnimationCollection, angle: number): number {
+    private getDirectionalAnimationId(collectionId: number, angle: number): number {
+        let animationId = 0;
+
         if (angle >= Math.PI * 0.25 && angle <= Math.PI * 0.75) {
-            return this.animations.getAnimationId(collection.moveUp ?? collection.idle);
+            animationId = this.animations.getAnimationByPurpose(collectionId, AnimationPurpose.MOVE_UP);
         } else if (angle >= -Math.PI * 0.75 && angle <= -Math.PI * 0.25) {
-            return this.animations.getAnimationId(collection.moveDown ?? collection.idle);
+            animationId = this.animations.getAnimationByPurpose(collectionId, AnimationPurpose.MOVE_DOWN);
         } else if (angle > Math.PI * 0.75 || angle < -Math.PI * 0.75) {
-            return this.animations.getAnimationId(collection.moveLeft ?? collection.idle);
+            animationId =  this.animations.getAnimationByPurpose(collectionId, AnimationPurpose.MOVE_LEFT);
         } else {
-            return this.animations.getAnimationId(collection.moveRight ?? collection.idle);
+            animationId = this.animations.getAnimationByPurpose(collectionId, AnimationPurpose.MOVE_RIGHT);
         }
+
+        return this.animations.getAnimationId(animationId);
     }
 }

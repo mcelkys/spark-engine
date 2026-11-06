@@ -6,10 +6,11 @@ import { ButtonGroup, Divider, IconButton, List, ListItem, ListItemButton, ListI
 import { useSetter } from "../hooks/state";
 import { EditorView } from "../types";
 import { Panel, Spacer } from "../styled";
-import MenuIcon from "@mui/icons-material/Menu";
-import { pickFile, readFile } from "../util/files";
+import SaveIcon from "@mui/icons-material/Save";
+import { pickFile, readFile, saveFile } from "../util/files";
 import type { UnityMetadata } from "../../types/unity";
 import { translateUnityMetadata } from "../util/unity";
+import { useSelect } from "../state";
 
 const Aside = styled(Panel)({
     minWidth: 300,
@@ -20,43 +21,50 @@ const Toolbar = styled(ButtonGroup)(({ theme }) => ({
 }));
 
 export const MainControls: FC = () => {
+    const state = useSelect((state) => state);
     const setView = useSetter("bottomView");
     const setBitmap = useSetter("texture");
     const setSpriteManifest = useSetter("sprites");
     const menuAnchor = useRef<HTMLButtonElement>(null);
     const [ menuOpen, setMenuOpen ] = useState(false);
 
-    const importTextureAtlas = () => {
+    const importTextureAtlas = async () => {
         setMenuOpen(false);
-        pickFile("image/png")
-            .then((files) => {
-                if (files && files.length === 1) {
-                    return createImageBitmap(files[0]!, { colorSpaceConversion: "none" });
-                }
-            })
-            .then((bitmap) => {
-                setBitmap(bitmap);
-            });
+        const file = await pickFile("texture-atlas", { "image/png": ".png" });
+        const bitmap = await createImageBitmap(file, { colorSpaceConversion: "none" });
+        setBitmap(bitmap);
     };
 
-    const importSpriteManifest = () => {
+    const importSpriteManifest = async () => {
         setMenuOpen(false);
-        pickFile("application/json")
-            .then((files) => {
-                if (files && files.length === 1) {
-                    return readFile(files[0]!);
-                }
-            })
-            .then((buffer) => {
-                const decoder = new TextDecoder();
+        const decoder = new TextDecoder();
+        const file = await pickFile("sprite-manifest", { "application/json": ".json" });
+        const buffer = await readFile(file);
+        const text = decoder.decode(buffer);
+        const json = JSON.parse(text) as UnityMetadata;
+        const manifest = translateUnityMetadata(json);
+        setSpriteManifest(manifest);
+    };
 
-                if (buffer) {
-                    const text = decoder.decode(buffer);
-                    const json = JSON.parse(text) as UnityMetadata;
-                    const manifest = translateUnityMetadata(json);
-                    setSpriteManifest(manifest);
-                }
-            });
+    const exportGameFile = async () => {
+        const encoder = new TextEncoder();
+        const text = JSON.stringify(state.game);
+        const data = encoder.encode(text);
+        await saveFile("game-file", { "application/json": ".json" }, data);
+    };
+
+    const exportSpriteMetadata = async () => {
+        const encoder = new TextEncoder();
+        const text = JSON.stringify(state.sprites);
+        const data = encoder.encode(text);
+        await saveFile("game-file", { "application/json": ".json" }, data);
+    };
+
+    const exportAnimationPack = async () => {
+        const encoder = new TextEncoder();
+        const text = JSON.stringify(state.animationPack);
+        const data = encoder.encode(text);
+        await saveFile("game-file", { "application/json": ".json" }, data);
     };
 
     return (
@@ -64,12 +72,15 @@ export const MainControls: FC = () => {
             <Aside component="aside">
                 <Toolbar>
                     <IconButton ref={menuAnchor} onClick={() => setMenuOpen((is) => !is)}>
-                        <MenuIcon />
+                        <SaveIcon />
                     </IconButton>
                 </Toolbar>
                 <Menu anchorEl={menuAnchor.current} open={menuOpen} onClose={() => setMenuOpen(false)}>
                     <MenuItem onClick={importTextureAtlas}>Import texture atlas</MenuItem>
                     <MenuItem onClick={importSpriteManifest}>Import sprite manifest</MenuItem>
+                    <MenuItem onClick={exportGameFile}>Export game file</MenuItem>
+                    <MenuItem onClick={exportSpriteMetadata}>Export sprite metadata</MenuItem>
+                    <MenuItem onClick={exportAnimationPack}>Export animation pack</MenuItem>
                 </Menu>
                 <List>
                     <ListItem disablePadding>

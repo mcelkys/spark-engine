@@ -14,7 +14,7 @@ export const Editor: FC = () => (
     <EditorProvider>
         <ThemeProvider theme={THEME}>
             <StyleBaseline />
-            <Loader url="/assets/game.json">
+            <Loader>
                 <MainControls />
                 <StructuralRow>
                     <StructuralColumn component="main">

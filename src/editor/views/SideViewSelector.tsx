@@ -4,6 +4,7 @@ import { SideViewType } from "../types";
 import { SceneView } from "./SceneView";
 import { TemplateView } from "./TemplateView";
 import { EntityView } from "./EntityView";
+import { AnimationCollectionView } from "./AnimationCollectionView";
 
 export const SideViewSelector: FC = () => {
     const view = useSelect((state) => state.sideView);
@@ -16,7 +17,10 @@ export const SideViewSelector: FC = () => {
             return <TemplateView key={view.id} id={view.id} />;
 
         case SideViewType.ENTITY:
-            return <EntityView key={view.id} id={view.id} />
+            return <EntityView key={view.id} id={view.id} />;
+
+        case SideViewType.ANIMATION_COLLECTION:
+            return <AnimationCollectionView key={view.id} id={view.id} />;
     
         default:
             return null;

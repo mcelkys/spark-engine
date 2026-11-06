@@ -116,21 +116,27 @@
         {
             "id": 1,
             "name": "grass",
-            "idle": 2
+            "animations": {
+                "0": 2
+            }
         },
         {
             "id": 2,
             "name": "rock",
-            "idle": 8
+            "animations": {
+                "0": 8
+            }
         },
         {
             "id": 3,
             "name": "player",
-            "idle": 4,
-            "moveUp": 6,
-            "moveRight": 6,
-            "moveDown": 6,
-            "moveLeft": 6
+            "animations": {
+                "0": 4,
+                "1": 6,
+                "2": 6,
+                "3": 6,
+                "4": 6
+            }
         }
     ]
 }

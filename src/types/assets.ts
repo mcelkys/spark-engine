@@ -19,14 +19,18 @@ export interface AnimationMetadata {
 export interface AnimationCollection {
     id: number;
     name: string;
-    idle: number;
-    moveUp?: number;
-    moveRight?: number;
-    moveDown?: number;
-    moveLeft?: number;
+    animations: Record<AnimationPurpose, number>;
 }
 
 export interface AnimationPack {
     animations: AnimationMetadata[];
     collections: AnimationCollection[];
+}
+
+export enum AnimationPurpose {
+    IDLE,
+    MOVE_UP,
+    MOVE_RIGHT,
+    MOVE_DOWN,
+    MOVE_LEFT,
 }

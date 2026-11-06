@@ -1,4 +1,4 @@
-import type { AnimationCollection, AnimationMetadata, AnimationPack, SpriteMetadata } from "./types/assets";
+import type { AnimationCollection, AnimationMetadata, AnimationPack, AnimationPurpose, SpriteMetadata } from "./types/assets";
 import { loadFile } from "./util/util";
 
 export class TextureAtlas {
@@ -54,14 +54,21 @@ export class TextureAtlas {
 
 export class AnimationManifest {
     private readonly animations: AnimationMetadata[];
-    private readonly collections: Map<number, AnimationCollection>;
+    private readonly collections: AnimationCollection[];
     private readonly animationIds: Map<number, number>;
+    private readonly purposes: Map<number, Map<AnimationPurpose, number>>;
 
     constructor(animations: AnimationMetadata[], collections: AnimationCollection[]) {
         this.animations = animations;
-        this.collections = new Map(collections.map((collection) => [collection.id, collection]));
+        this.collections = collections;
         this.animationIds = new Map(animations.map((animation, index) => [
             animation.id, index,
+        ]));
+        this.purposes = new Map(collections.map((collection) => [
+            collection.id,
+            new Map(Object.entries(collection.animations).map(([key, id]) => [
+                parseInt(key), id
+            ])),
         ]));
     }
 
@@ -69,14 +76,14 @@ export class AnimationManifest {
         return this.animationIds.get(id)!;
     }
 
-    public getCollection(id: number): AnimationCollection {
-        return this.collections.get(id)!;
+    public getAnimationByPurpose(collectionId: number, purpose: AnimationPurpose): number {
+        return this.purposes.get(collectionId)!.get(purpose)!;
     }
 
     public export(): AnimationPack {
         return {
             animations: this.animations,
-            collections: Array.from(this.collections.values()),
+            collections: this.collections,
         };
     }
 

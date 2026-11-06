@@ -6,14 +6,9 @@ import type { Game } from "../types/game";
 import type { AnimationPack, SpriteMetadata } from "../types/assets";
 import { Renderer } from "../render/renderer";
 import { useSetter } from "./hooks/state";
-import { Box, CircularProgress, type BoxProps } from "@mui/material";
+import { Box, Button, CircularProgress, type BoxProps } from "@mui/material";
 import { styled } from "@mui/material/styles";
-
-
-
-interface LoaderProps extends PropsWithChildren {
-    url: string;
-}
+import { pickFile, readFile } from "./util/files";
 
 const Fullscreen = styled(Box)<BoxProps>({
     flex: 1,
@@ -22,7 +17,7 @@ const Fullscreen = styled(Box)<BoxProps>({
     justifyContent: "center",
 });
 
-export const Loader: FC<LoaderProps> = ({ url, children }) => {
+export const Loader: FC<PropsWithChildren> = ({ children }) => {
     const state = useSelect((state) => state);
     const setDevice = useSetter("device");
     const setGame = useSetter("game");
@@ -31,14 +26,10 @@ export const Loader: FC<LoaderProps> = ({ url, children }) => {
     const setTexture = useSetter("texture");
     const game = state.game;
 
-
     useEffect(() => {
-        Promise.all([GameRenderer.requestDevice(), loadFile<Game>(url)])
-            .then(([ device, game ]) => {
-                setDevice(device);
-                setGame(game);
-            });
-    }, [url]);
+        GameRenderer.requestDevice()
+            .then((device) => setDevice(device));
+    }, []);
 
     useEffect(() => {
         if (game?.animationPack) {
@@ -67,9 +58,24 @@ export const Loader: FC<LoaderProps> = ({ url, children }) => {
         );
     }
 
-    return (
-        <Fullscreen>
-            <CircularProgress size={100} />
-        </Fullscreen>
-    );
+    return game 
+        ? (
+            <Fullscreen>
+                <CircularProgress size={100} />
+            </Fullscreen>
+        )
+        : (
+            <Fullscreen>
+                <Button size="large" variant="contained" onClick={async () => {
+                    const decoder = new TextDecoder();
+                    const file = await pickFile("game-file", { "application/json": ".json" });
+                    const buffer = await readFile(file);
+                    const text = decoder.decode(buffer);
+                    const project = JSON.parse(text) as Game;
+                    setGame(project);
+                }}>
+                    Open project
+                </Button>
+            </Fullscreen>
+        );
 };

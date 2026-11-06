@@ -1,21 +1,3 @@
-export function pickFile(accept?: string, multiple = false): Promise<FileList | null> {
-    const input = document.createElement("input");
-    input.type = "file";
-
-    if (typeof accept === "string") {
-            input.accept = accept;
-    }
-
-    input.multiple = multiple;
-
-    return new Promise((resolve) => {
-        input.addEventListener("change", () => {
-            resolve(input.files);
-        }, { passive: true, once: true });
-        input.click();
-    });
-}
-
 export function readFile(file: File): Promise<ArrayBuffer> {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
@@ -27,4 +9,29 @@ export function readFile(file: File): Promise<ArrayBuffer> {
         }, { passive: true, once: true });
         reader.readAsArrayBuffer(file);
     });
+}
+
+export async function pickFile(id: string, accept: Record<MIMEType, FileExtension | FileExtension[]>): Promise<File> {
+    const [ handle ] = await window.showOpenFilePicker({
+        id,
+        multiple: false,
+        excludeAcceptAllOption: true,
+        types: [
+            { accept },
+        ],
+    });
+    return handle.getFile();
+}
+
+export async function saveFile(id: string, accept: Record<MIMEType, FileExtension | FileExtension[]>, data: FileSystemWriteChunkType): Promise<void> {
+    const handle = await window.showSaveFilePicker({
+        id,
+        excludeAcceptAllOption: true,
+        types: [
+            { accept },
+        ],
+    });
+    const stream = await handle.createWritable();
+    await stream.write(data);
+    await stream.close();
 }
