@@ -1,8 +1,9 @@
 import { Fragment, useMemo, useState, type FC } from "react";
 import Button from "@mui/material/Button";
+import Box, { type BoxProps } from "@mui/material/Box";
 import { FormAction, FormFields, FormHead, H5, SideForm } from "../styled";
 import { useSelect } from "../state";
-import { useMutation, useSetter } from "../hooks/state";
+import { useFlagSetter, useMutation, useSetter } from "../hooks/state";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import { UnitField } from "../components/UnitField";
@@ -10,10 +11,31 @@ import { handleNumber } from "../util/input";
 import { Hide } from "../components/Hide";
 import { Trait } from "../../types/entity";
 import { Combobox } from "../components/Combobox";
+import { styled } from "@mui/material/styles";
+import IconButton from "@mui/material/IconButton";
+import { MyLocation } from "@mui/icons-material";
 
 interface EntityViewProps {
     id: number;
 }
+
+const FieldCollection = styled(Box)<BoxProps>(({ theme }) => ({
+    display: "flex",
+    gap: theme.spacing(3),
+}));
+
+const FieldSet = styled(FormFields)<BoxProps>(({ theme }) => ({
+    flex: 1,
+    paddingLeft: 0,
+    paddingRight: 0,
+    marginTop: theme.spacing(-1),
+}));
+
+const FieldActions = styled(Box)<BoxProps>({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+});
 
 export const EntityView: FC<EntityViewProps> = ({ id }) => {
     const animationPack = useSelect((state) => state.animationPack);
@@ -21,6 +43,7 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
     const templates = useSelect((state) => state.game?.templates ?? []);
     const entity = useSelect((state) => state.game!.entities.find((entity) => entity.id === id), [id]);
     const setView = useSetter("sideView");
+    const setPointListener = useFlagSetter("pointListener");
     const [isPlayer, setPlayer] = useState(entity?.isPlayer ?? false);
     const [sceneId, setSceneId] = useState(entity?.scene ?? null);
     const [templateId, setTemplateId] = useState(entity?.template ?? null);
@@ -35,13 +58,7 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
     const template = useMemo(() => templates.find((template) => template.id === templateId), [templateId, templates]);
     const animationOptions = useMemo(() => {
         const animationCollection = (animationPack?.collections ?? []).find((collection) => collection.id === template?.animations);
-        const animationIds = ([
-            animationCollection?.idle,
-            animationCollection?.moveUp,
-            animationCollection?.moveRight,
-            animationCollection?.moveDown,
-            animationCollection?.moveLeft,
-        ]).filter((id) => typeof id === "number");
+        const animationIds = Array.from(Object.values(animationCollection?.animations ?? {}));
         return new Map(
             (animationPack?.animations ?? [])
                 .filter((animation) => animationIds.includes(animation.id))
@@ -107,8 +124,20 @@ export const EntityView: FC<EntityViewProps> = ({ id }) => {
                 <FormFields>
                     <Combobox label="Appears in scene" value={sceneId} options={sceneOptions} onChange={setSceneId} />
                     <Combobox label="Template" value={templateId} options={templateOptions} onChange={setTemplateId} />
-                    <UnitField label="Spawn X coordinate" units="m" type="number" value={x} onChange={handleNumber(setX)} />
-                    <UnitField label="Spawn Y coordinate" units="m" type="number" value={y} onChange={handleNumber(setY)} />
+                    <FieldCollection>
+                        <FieldSet>
+                            <UnitField label="Spawn X coordinate" units="m" type="number" value={x} onChange={handleNumber(setX)} />
+                            <UnitField label="Spawn Y coordinate" units="m" type="number" value={y} onChange={handleNumber(setY)} />
+                        </FieldSet>
+                        <FieldActions>
+                            <IconButton onClick={() => setPointListener((point) => {
+                                setX(point.x);
+                                setY(point.y);
+                            })}>
+                                <MyLocation />
+                            </IconButton>
+                        </FieldActions>
+                    </FieldCollection>
                     <Hide show={template?.traits.includes(Trait.VISIBLE)}>
                         <Combobox label="Animation at spawn" value={animation} options={animationOptions} onChange={setAnimation} />
                     </Hide>

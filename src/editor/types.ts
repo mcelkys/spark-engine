@@ -1,8 +1,16 @@
 import type { Engine } from "../engine";
 import type { AnimationPack, SpriteMetadata } from "../types/assets";
 import type { Game } from "../types/game";
+import type { Point } from "../types/util";
+
+export interface EditorFlags {
+    selectingEntity: boolean;
+    movingEngity: boolean;
+    pointListener?: (point: Point) => void;
+}
 
 export interface EditorState {
+    flags: EditorFlags;
     game?: Game;
     device?: GPUDevice;
     sprites?: SpriteMetadata;

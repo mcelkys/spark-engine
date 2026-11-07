@@ -17,6 +17,10 @@ export class EntityManager {
         this.animations = animations;
     }
 
+    public getEntityId(id: number): number | undefined {
+        return this.entities.get(id);
+    }
+
     public spawnEntitity(entity: Entity): number {
         const entityId = this.buffer.storeEntity({
             ...entity,

@@ -5,10 +5,23 @@ import { reducer } from "./reducer";
 type ContextState = [EditorState, Dispatch<EditorAction>];
 export type Selector<T> = (state: EditorState) => T;
 
-const EditorContext = createContext<ContextState>([{}, () => {}]);
+const EditorContext = createContext<ContextState>([
+    {
+        flags: {
+            selectingEntity: false,
+            movingEngity: false,
+        },
+    },
+    () => {},
+]);
 
 export const EditorProvider: FC<PropsWithChildren> = ({ children }) => {
-    const value = useReducer(reducer, {});
+    const value = useReducer(reducer, {
+        flags: {
+            selectingEntity: false,
+            movingEngity: false,
+        },
+    });
     return (
         <EditorContext value={value}>{children}</EditorContext>
     );
