@@ -52,6 +52,7 @@
             "hitboxScaleX": 1.00777,
             "hitboxScaleY": 2,
             "mass": 10,
+            "frictionCoefficient": 10,
             "runForce": 1500,
             "animations": 3
         }

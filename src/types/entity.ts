@@ -11,9 +11,10 @@ export enum Trait {
 export interface EntityOptions extends Point {
     template: number;
     velocity?: number;
-    angle?: number;
+    velocityAngle?: number;
     animation?: number;
     force?: number;
+    forceAngle?: number;
 }
 
 export interface TemplateOptions {
@@ -26,6 +27,7 @@ export interface TemplateOptions {
     hitboxScaleY?: number;
     mass?: number;
     dragCoefficient?: number;
+    frictionCoefficient?: number;
     runForce?: number;
     depth?: number;
     animations?: number;

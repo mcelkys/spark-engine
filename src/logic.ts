@@ -76,7 +76,7 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
             if (moveX !== 0 || moveY !== 0) {
                 const angle = Math.atan2(moveY, moveX); // Heading in radians
                 this.buffer.force[playerId] = force;
-                this.buffer.angle[playerId] = angle;
+                this.buffer.forceAngle[playerId] = angle;
                 this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollectionId, angle);
             } else {
                 // Stop movement and switch back to idle animation
@@ -103,7 +103,7 @@ class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
 
                 // Invert rawY because standard 2D canvas/world coordinates treat UP as positive
                 const angle = Math.atan2(-rawY, rawX);
-                this.buffer.angle[playerId] = angle;
+                this.buffer.forceAngle[playerId] = angle;
                 this.buffer.animation[playerId] = this.getDirectionalAnimationId(animationCollectionId, angle);
             } else {
                 // Stick is centered within deadzone

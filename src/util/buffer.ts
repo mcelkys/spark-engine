@@ -8,9 +8,9 @@ export class EngineBuffer {
     public static readonly GLOBAL_I32_COUNT = 11;
     public static readonly GLOGAL_F32_COUNT = 7;
     public static readonly GPU_ATTRIBUTE_COUNT = 12;
-    public static readonly ENTITY_F32_COUNT = 6;
+    public static readonly ENTITY_F32_COUNT = 7;
     public static readonly ENTITY_U16_COUNT = 2;
-    public static readonly TEMPLATE_F32_COUNT = 10;
+    public static readonly TEMPLATE_F32_COUNT = 11;
     public static readonly TEMPLATE_U16_COUNT = 2;
 
     private isWaitingForLock: boolean;
@@ -34,6 +34,7 @@ export class EngineBuffer {
     public readonly hitboxScaleY: Float32Array;
     public readonly mass: Float32Array;
     public readonly dragCoefficient: Float32Array;
+    public readonly frictionCoefficient: Float32Array;
     public readonly runForce: Float32Array;
     public readonly depth: Float32Array;
 
@@ -43,9 +44,10 @@ export class EngineBuffer {
     public readonly x: Float32Array;
     public readonly y: Float32Array;
     public readonly velocity: Float32Array;
-    public readonly angle: Float32Array;
+    public readonly velocityAngle: Float32Array;
     public readonly animationProgress: Float32Array;
     public readonly force: Float32Array;
+    public readonly forceAngle: Float32Array;
 
     constructor(options: BufferOptions) {
         const globalIntCount = EngineBuffer.GLOBAL_I32_COUNT;
@@ -94,6 +96,7 @@ export class EngineBuffer {
         this.hitboxScaleY = allocator.f32(options.maxTemplates);
         this.mass = allocator.f32(options.maxTemplates);
         this.dragCoefficient = allocator.f32(options.maxTemplates);
+        this.frictionCoefficient = allocator.f32(options.maxTemplates);
         this.runForce = allocator.f32(options.maxTemplates);
         this.depth = allocator.f32(options.maxTemplates);
 
@@ -103,9 +106,10 @@ export class EngineBuffer {
         this.x = allocator.f32(options.maxEntities);
         this.y = allocator.f32(options.maxEntities);
         this.velocity = allocator.f32(options.maxEntities);
-        this.angle = allocator.f32(options.maxEntities);
+        this.velocityAngle = allocator.f32(options.maxEntities);
         this.animationProgress = allocator.f32(options.maxEntities);
         this.force = allocator.f32(options.maxEntities);
+        this.forceAngle = allocator.f32(options.maxEntities);
 
         // There is no player assigned yet if this is a fresh buffer
         if (!options.buffer) {
@@ -354,10 +358,11 @@ export class EngineBuffer {
         this.x[idx] = entity.x;
         this.y[idx] = entity.y;
         this.velocity[idx] = entity.velocity ?? 0.0;
-        this.angle[idx] = entity.angle ?? 0.0;
+        this.velocityAngle[idx] = entity.velocityAngle ?? 0.0;
         this.animation[idx] = entity.animation ?? 0;
         this.animationProgress[idx] = 0.0;
         this.force[idx] = entity.force ?? 0.0;
+        this.forceAngle[idx] = entity.forceAngle ?? 0.0;
     }
 
     public removeEntity(idx: number): void {
@@ -370,19 +375,21 @@ export class EngineBuffer {
         this.x.copyWithin(idx, nextIdx, count);
         this.y.copyWithin(idx, nextIdx, count);
         this.velocity.copyWithin(idx, nextIdx, count);
-        this.angle.copyWithin(idx, nextIdx, count);
+        this.velocityAngle.copyWithin(idx, nextIdx, count);
         this.animation.copyWithin(idx, nextIdx, count);
         this.animationProgress.copyWithin(idx, nextIdx, count);
         this.force.copyWithin(idx, nextIdx, count);
+        this.forceAngle.copyWithin(idx, nextIdx, count);
 
         this.template[lastIdx] = 0;
         this.x[lastIdx] = 0.0;
         this.y[lastIdx] = 0.0;
         this.velocity[lastIdx] = 0.0;
-        this.angle[lastIdx] = 0.0;
+        this.velocityAngle[lastIdx] = 0.0;
         this.animation[lastIdx] = 0;
         this.animationProgress[lastIdx] = 0.0;
         this.force[lastIdx] = 0.0;
+        this.forceAngle[lastIdx] = 0.0;
 
         this.activeEntityCount = lastIdx;
 
@@ -400,10 +407,11 @@ export class EngineBuffer {
         this.x.fill(0.0, 0, count);
         this.y.fill(0.0, 0, count);
         this.velocity.fill(0.0, 0, count);
-        this.angle.fill(0.0, 0, count);
+        this.velocityAngle.fill(0.0, 0, count);
         this.animation.fill(0, 0, count);
         this.animationProgress.fill(0.0, 0, count);
         this.force.fill(0.0, 0, count);
+        this.forceAngle.fill(0.0, 0, count);
         this.playerId = -1;
         this.activeEntityCount = 0;
     }
@@ -433,6 +441,7 @@ export class EngineBuffer {
         this.hitboxScaleY[idx] = template.hitboxScaleY ?? (isTangible ? template.scaleY : 0.0);
         this.mass[idx] = template.mass ?? 0.0;
         this.dragCoefficient[idx] = template.dragCoefficient ?? 1.2;
+        this.frictionCoefficient[idx] = template.frictionCoefficient ?? 0.7;
         this.runForce[idx] = template.runForce ?? 0.0;
         this.depth[idx] = template.depth ?? 0.0;
         this.animations[idx] = template.animations ?? 0;
@@ -452,6 +461,7 @@ export class EngineBuffer {
         this.hitboxScaleY.copyWithin(idx, nextIdx, count);
         this.mass.copyWithin(idx, nextIdx, count);
         this.dragCoefficient.copyWithin(idx, nextIdx, count);
+        this.frictionCoefficient.copyWithin(idx, nextIdx, count);
         this.runForce.copyWithin(idx, nextIdx, count);
         this.depth.copyWithin(idx, nextIdx, count);
         this.animations.copyWithin(idx, nextIdx, count);
@@ -465,6 +475,7 @@ export class EngineBuffer {
         this.hitboxScaleY[lastIdx] = 0.0;
         this.mass[lastIdx] = 0.0;
         this.dragCoefficient[lastIdx] = 0.0;
+        this.frictionCoefficient[lastIdx] = 0.0;
         this.runForce[lastIdx] = 0.0;
         this.depth[lastIdx] = 0.0;
         this.animations[lastIdx] = 0;
@@ -483,6 +494,7 @@ export class EngineBuffer {
         this.hitboxScaleY.fill(0.0, 0, count);
         this.mass.fill(0.0, 0, count);
         this.dragCoefficient.fill(0.0, 0, count);
+        this.frictionCoefficient.fill(0.0, 0, count);
         this.runForce.fill(0.0, 0, count);
         this.depth.fill(0.0, 0, count);
         this.animations.fill(0, 0, count);

@@ -43,6 +43,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
     const [hitboxScaleY, setHitboxScaleY] = useState(template?.hitboxScaleY ?? template?.scaleY ?? 0);
     const [mass, setMass] = useState(template?.mass ?? 0);
     const [dragCoefficient, setDragCoefficient] = useState(template?.dragCoefficient ?? 1.2);
+    const [frictionCoefficient, setFrictionCoefficient] = useState(template?.frictionCoefficient ?? 0.7);
     const [runForce, setRunForce] = useState(template?.runForce ?? 0);
     const [depth, setDepth] = useState(template?.depth ?? 0);
     const [animations, setAnimations] = useState(template?.animations ?? null);
@@ -67,6 +68,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                         hitboxScaleY,
                         mass,
                         dragCoefficient,
+                        frictionCoefficient,
                         runForce,
                         depth,
                         animations: animations ?? undefined,
@@ -86,6 +88,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                             hitboxScaleY,
                             mass,
                             dragCoefficient,
+                            frictionCoefficient,
                             runForce,
                             depth,
                             animations: animations ?? undefined,
@@ -144,6 +147,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                     <Hide show={traits.has(Trait.MOBILE)}>
                         <UnitField label="Mass" units="kg" type="number" value={mass} onChange={handleNumber(setMass)} />
                         <TextField label="Drag coefficient" type="number" value={dragCoefficient} onChange={handleNumber(setDragCoefficient)} />
+                        <TextField label="Friction coefficient" type="number" value={frictionCoefficient} onChange={handleNumber(setFrictionCoefficient)} />
                         <UnitField label="Movement force" units="N" type="number" value={runForce} onChange={handleNumber(setRunForce)} />
                     </Hide>
                     <Hide show={traits.has(Trait.HAS_STATIC_DEPTH)}>

@@ -45,7 +45,6 @@ class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest> {
             return;
         }
 
-        const friction = 10;
         const worldWidth = this.buffer.worldWidth;
         const worldHeight = this.buffer.worldHeight;
         const gravity = this.buffer.gravity;
@@ -85,16 +84,18 @@ class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest> {
 
             const traits = this.buffer.traits[templateId]!;
             const isMobile = (traits & Trait.MOBILE) > 0;
+            const friction = this.buffer.frictionCoefficient[templateId]!;
             const mass = this.buffer.mass[templateId]!;
 
             if (!isMobile || mass === 0) {
                 continue;
             }
 
-            const force = this.buffer.force[i]!;
             const lastVelocity = this.buffer.velocity[i]!;
+            const lastVelocityAngle = this.buffer.velocityAngle[i]!;
             const hitboxScaleX = this.buffer.hitboxScaleX[templateId]!;
             const hitboxScaleY = this.buffer.hitboxScaleY[templateId]!;
+            const resistiveForceAngle = lastVelocityAngle + Math.PI;
             let resistiveForce = 0.0;
 
             // Compute drag / friction forces
@@ -106,23 +107,55 @@ class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest> {
                 resistiveForce = frictionForce + dragForce;
             }
 
-            // Compute velocity
-            const netForce = force - resistiveForce;
-            const accelation = netForce / mass;
-            const deltaVelocity = accelation * deltaTime;
-            const newVelocity = Math.max(0, lastVelocity + deltaVelocity);
+            // Compute net force
+            const force = this.buffer.force[i]!;
+            const forceAngle = this.buffer.forceAngle[i]!;
+            const forceX = force * Math.cos(forceAngle);
+            const forceY = force * Math.sin(forceAngle);
+            const resistiveForceX = resistiveForce * Math.cos(resistiveForceAngle);
+            const resistiveForceY = resistiveForce * Math.sin(resistiveForceAngle);
+            const netForceX = forceX + resistiveForceX;
+            const netForceY = forceY + resistiveForceY;
+            const netForce = Math.sqrt(netForceX ** 2 + netForceY ** 2);
+            const netForceAngle = Math.atan2(netForceY, netForceX);
+
+            // Compute change in velocity
+            const acceleration = netForce / mass;
+            let newVelocity = lastVelocity;
+            let newVelocityAngle = lastVelocityAngle;
+
+            if (lastVelocity > 0.0) {
+                const headingDelta = netForceAngle - lastVelocityAngle;
+                const accelerationParallel = acceleration * Math.cos(headingDelta);
+                const deltaVelocity = accelerationParallel * deltaTime;
+                newVelocity = Math.max(0, lastVelocity + deltaVelocity);
+
+                if (newVelocity > 0.0) {
+                    const accelerationPerpendicular = acceleration * Math.sin(headingDelta);
+                    const angularVelocity = accelerationPerpendicular / newVelocity;
+                    newVelocityAngle = lastVelocityAngle + angularVelocity * deltaTime;
+                }
+            } else {
+                const deltaVelocity = acceleration * deltaTime;
+                newVelocity = Math.max(0, lastVelocity + deltaVelocity);
+
+                if (newVelocity > 0.0) {
+                    newVelocityAngle = netForceAngle;
+                }
+            }
+
             this.buffer.velocity[i] = newVelocity;
+            this.buffer.velocityAngle[i] = newVelocityAngle;
 
             if (newVelocity === 0) {
                 continue;
             }
 
             // Compute directional movement deltas
-            const angle = this.buffer.angle[i]!; // radians
             const lastX = this.buffer.x[i]!;
             const lastY = this.buffer.y[i]!;
-            const deltaX = newVelocity * Math.cos(angle) * deltaTime;
-            const deltaY = newVelocity * Math.sin(angle) * deltaTime;
+            const deltaX = newVelocity * Math.cos(newVelocityAngle) * deltaTime;
+            const deltaY = newVelocity * Math.sin(newVelocityAngle) * deltaTime;
             const newX = lastX + deltaX;
             const newY = lastY + deltaY;
             const halfWidth = hitboxScaleX / 2;
@@ -145,15 +178,6 @@ class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest> {
             if (newY - halfHeight < -worldHeight || newY + halfHeight > worldHeight) {
                 this.buffer.y[i] = lastY;
             }
-
-            // console.log(`
-            //     x: ${this.buffer.x[i]}
-            //     y: ${this.buffer.y[i]}
-            //     force: ${this.buffer.force[i]}
-            //     mass: ${this.buffer.mass[i]}
-            //     velocity: ${this.buffer.velocity[i]}
-            //     resistiveForce: ${resistiveForce}
-            // `);
         }
 
         this.buffer.endWriting();
