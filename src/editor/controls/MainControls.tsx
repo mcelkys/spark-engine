@@ -12,6 +12,7 @@ import { pickFile, readFile, saveFile } from "../util/files";
 import type { UnityMetadata } from "../../types/unity";
 import { translateUnityMetadata } from "../util/unity";
 import { useSelect } from "../state";
+import { AudioControls } from "./AudioControls";
 
 const Aside = styled(Panel)({
     minWidth: 300,
@@ -137,9 +138,16 @@ export const MainControls: FC = () => {
                             <ListItemText primary="Animation collections" />
                         </ListItemButton>
                     </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setView(EditorView.AUDIO)}>
+                            <ListItemText primary="Audio sources" />
+                        </ListItemButton>
+                    </ListItem>
                 </List>
                 <Spacer />
                 <PlayControls />
+                <Divider variant="middle" />
+                <AudioControls />
                 <Divider variant="middle" />
                 <RateDisplay />
             </Aside>

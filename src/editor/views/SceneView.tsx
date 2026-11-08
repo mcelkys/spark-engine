@@ -1,4 +1,4 @@
-import { useState, type FC } from "react";
+import { useMemo, useState, type FC } from "react";
 import { useSelect } from "../state";
 import Button from "@mui/material/Button";
 import { FormAction, FormFields, FormHeading, SideForm } from "../styled";
@@ -6,6 +6,9 @@ import { useMutation, useSetter } from "../hooks/state";
 import TextField from "@mui/material/TextField";
 import { handleNumber, handleString } from "../util/input";
 import { UnitField } from "../components/UnitField";
+import { Combobox } from "../components/Combobox";
+import FormControl from "@mui/material/FormControl";
+import { InputLabel, Slider } from "@mui/material";
 
 interface SceneViewProps {
     id: number;
@@ -13,6 +16,8 @@ interface SceneViewProps {
 
 export const SceneView: FC<SceneViewProps> = ({ id }) => {
     const scene = useSelect((state) => state.game!.scenes.find((scene) => scene.id === id), [id]);
+    const audio = useSelect((state) => state.game?.audio ?? []);
+    const audioNames = useMemo(() => new Map(audio.map((aud) => [aud.id, aud.name])), [audio]);
     const setView = useSetter("sideView");
     const [name, setName] = useState(scene?.name ?? "");
     const [worldWidth, setWorldWidth] = useState(scene?.worldWidth ?? 0);
@@ -21,6 +26,8 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
     const [gravity, setGravity] = useState(scene?.gravity ?? 0);
     const [airDensity, setAirDensity] = useState(scene?.airDensity ?? 0);
     const [gridCellSize, setGridCellSize] = useState(scene?.gridCellSize ?? 0);
+    const [backgroundAudio, setBackgroundAudio] = useState(scene?.backgroundAudio ?? null);
+    const [backgroundAudioVolume, setBackgroundAudioVolume] = useState((scene?.backgroundAudioVolume ?? 1) * 1000);
     const submit = useMutation((state) => ({
         ...state,
         game: {
@@ -37,6 +44,8 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
                         gravity,
                         airDensity,
                         gridCellSize,
+                        backgroundAudio: backgroundAudio ?? undefined,
+                        backgroundAudioVolume: backgroundAudioVolume / 1000,
                     },
                 ] 
                 : (state.game?.scenes ?? []).map((s) => {
@@ -50,6 +59,8 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
                             gravity,
                             airDensity,
                             gridCellSize,
+                            backgroundAudio: backgroundAudio ?? undefined,
+                            backgroundAudioVolume: backgroundAudioVolume / 1000,
                         };
                     }
                     return s;
@@ -88,6 +99,18 @@ export const SceneView: FC<SceneViewProps> = ({ id }) => {
                     onChange={handleNumber(setAirDensity)}
                 />
                 <UnitField label="Collision bucket size" units="m" type="number" value={gridCellSize} onChange={handleNumber(setGridCellSize)} />
+                <Combobox label="Background audio" value={backgroundAudio} options={audioNames} onChange={setBackgroundAudio} />
+                <FormControl>
+                    <InputLabel htmlFor="volume" shrink>Background audio volume</InputLabel>
+                    <Slider 
+                        id="volume" 
+                        value={backgroundAudioVolume} 
+                        min={0} 
+                        max={1000}
+                        onChange={(_, val) => setBackgroundAudioVolume(val)}
+                        sx={(theme) => ({ marginTop: theme.spacing(2) })}
+                    />
+                </FormControl>
             </FormFields>
             <FormAction>
                 <Button onClick={() => setView(undefined)}>Cancel</Button>

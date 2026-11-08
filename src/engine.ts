@@ -1,3 +1,4 @@
+import { AudioManager } from "./audio-manager";
 import { EntityManager } from "./entity-manager";
 import { GameRenderer } from "./game-renderer";
 import { InputHandler } from "./input-handler";
@@ -15,6 +16,7 @@ export class Engine {
     public scene: Scene;
     public readonly renderer: GameRenderer;
     public readonly entityManager: EntityManager;
+    public readonly audioManager: AudioManager;
     public readonly input: InputHandler;
     private animations: AnimationManifest;
     private readonly game: Game;
@@ -27,6 +29,7 @@ export class Engine {
         this.animations = atlas.animationManifest;
         this.buffer = new EngineBuffer(this.bufferOptions);
         this.entityManager = new EntityManager(this.buffer, this.animations);
+        this.audioManager = new AudioManager();
 
         this.entityManager.loadTemplates(this.game.templates);
         this.scene = this.loadScene(game.scene);
@@ -34,7 +37,7 @@ export class Engine {
         this.input = new InputHandler(this.buffer, this.game.keyBindings);
         this.renderer = new GameRenderer(device, canvas, texture, atlas, this.buffer);
         this.physics = new PhysicsClient(new URL("./physics.ts", import.meta.url));
-        this.logic = new LogicClient(new URL("./logic.ts", import.meta.url));
+        this.logic = new LogicClient(new URL("./logic.ts", import.meta.url), this.audioManager);
         this.isRunning = false;
     }
 
@@ -57,10 +60,15 @@ export class Engine {
         this.renderer.setScreenSize(parent.clientWidth, parent.clientHeight);
 
         await Promise.all([
+            this.audioManager.loadAll(this.game.audio),
             this.physics.createBuffer(this.buffer.buffer, this.bufferOptions),
             this.logic.importAssetManifest(this.animations.export())
                 .then(() => this.logic.createBuffer(this.buffer.buffer, this.bufferOptions)),
         ]);
+
+        if (typeof this.scene.backgroundAudio === "number") {
+            this.audioManager.play(this.scene.backgroundAudio, this.scene.backgroundAudioVolume, true);
+        }
 
         this.buffer.isRunning = true;
     }
@@ -125,8 +133,16 @@ export class Engine {
         this.game.scenes = scenes;
 
         if (activeScene) {
+            if (typeof this.scene.backgroundAudio === "number") {
+                this.audioManager.stop(this.scene.backgroundAudio);
+            }
+
             this.scene = activeScene;
             this.applySceneConfig(activeScene);
+
+            if (typeof activeScene.backgroundAudio === "number") {
+                this.audioManager.play(activeScene.backgroundAudio, activeScene.backgroundAudioVolume, true);
+            }
         } else {
             await this.entityManager.unloadScene();
             this.loadScene(this.game.scene)
@@ -147,7 +163,20 @@ export class Engine {
         };
         this.applySceneConfig(this.scene);
         this.spawnDefaultEntities(this.scene);
+
+        if (typeof this.scene.backgroundAudio === "number") {
+            this.audioManager.play(this.scene.backgroundAudio, this.scene.backgroundAudioVolume, true);
+        }
+
         return this.scene;
+    }
+
+    public async unloadScene(): Promise<void> {
+        this.entityManager.unloadScene();
+
+        if (typeof this.scene.backgroundAudio === "number") {
+            this.audioManager.stop(this.scene.backgroundAudio);
+        }
     }
 
     protected applySceneConfig(scene: Scene): void {

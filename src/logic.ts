@@ -1,13 +1,13 @@
-import { WorkerRequestType, type LogicWorkerRequest } from "./types/message";
+import { WorkerRequestType, type LogicWindowRequest, type LogicWorkerRequest } from "./types/message";
 import { Input, InputMode } from "./types/input";
 import { AnimationManifest } from "./textures";
 import { EngineBuffer } from "./util/buffer";
 import { Singleton } from "./util/decorators";
 import { ComputeWorker } from "./util/worker";
-import { AnimationPurpose, type AnimationCollection } from "./types/assets";
+import { AnimationPurpose } from "./types/assets";
 
 @Singleton
-class LogicWorker extends ComputeWorker<LogicWorkerRequest> {
+class LogicWorker extends ComputeWorker<LogicWorkerRequest, LogicWindowRequest> {
     private buffer: EngineBuffer = EngineBuffer.empty();
     private animations: AnimationManifest = AnimationManifest.empty();
 

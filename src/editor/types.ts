@@ -31,6 +31,7 @@ export enum EditorView {
     ENTITIES,
     ANIMATIONS,
     ANIMATION_COLLECTIONS,
+    AUDIO,
 }
 
 export enum SideViewType {

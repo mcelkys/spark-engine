@@ -1,3 +1,4 @@
+import type { AudioMetadata } from "./audio";
 import type { EntityOptions, TemplateOptions } from "./entity";
 import type { Input } from "./input";
 
@@ -13,6 +14,7 @@ export interface Game {
     scene: number;
     keyBindings: Record<string, Input>;
     entities: Entity[];
+    audio: AudioMetadata[];
 }
 
 export interface Scene {
@@ -24,6 +26,8 @@ export interface Scene {
     gravity: number;
     airDensity: number;
     gridCellSize: number;
+    backgroundAudio?: number;
+    backgroundAudioVolume?: number;
 }
 
 export interface Entity extends EntityOptions {

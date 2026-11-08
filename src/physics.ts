@@ -8,7 +8,7 @@ import { SpacialHashGrid } from "./util/spacial-hash-grid";
 import { Uint32Set } from "./util/uint-32-set";
 
 @Singleton
-class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest> {
+class PhysicsWorker extends ComputeWorker<PhysicsWorkerRequest, never> {
     private grid: SpacialHashGrid = new SpacialHashGrid(1, 1, 1, 0);
     private collisions: Uint32Set = new Uint32Set(0);
     private buffer: EngineBuffer = EngineBuffer.empty();

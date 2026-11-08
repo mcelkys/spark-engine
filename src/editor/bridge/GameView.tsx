@@ -234,6 +234,12 @@ function useReboot(): void {
             clearChanged();
         }
     }, [game?.keyBindings]);
+
+    useEffect(() => {
+        if (engine instanceof Engine) {
+            engine.audioManager.reload(game?.audio ?? []);
+        }
+    }, [game?.audio]);
 }
 
 function findEntity(state: EditorState, point: Point): Entity | undefined {

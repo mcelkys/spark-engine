@@ -12,6 +12,7 @@ export enum WorkerRequestType {
     PAUSE,
     ASSET_MANIFEST,
     BUFFER,
+    PLAY_AUDIO,
 }
 
 export interface WorkerMessage {
@@ -54,8 +55,13 @@ export interface BufferRequest extends WorkerRequest, BufferOptions {
     buffer: SharedArrayBuffer;
 }
 
+export interface PlayAudioRequest extends WorkerRequest {
+    requestType: WorkerRequestType.PLAY_AUDIO;
+    id: number;
+}
 
 
 export type ResponseMessage<T> = SuccessMessage<T> | FailuteMessage;
 export type LogicWorkerRequest = StartRequest | PauseRequest | AnimationPackRequest | BufferRequest;
 export type PhysicsWorkerRequest = StartRequest | PauseRequest | BufferRequest;
+export type LogicWindowRequest = PlayAudioRequest;

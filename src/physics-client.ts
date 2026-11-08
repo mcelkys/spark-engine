@@ -2,7 +2,12 @@ import type { BufferOptions } from "./types/buffer";
 import { MessageType, WorkerRequestType, type PhysicsWorkerRequest } from "./types/message";
 import { WorkerClient } from "./util/worker-client";
 
-export class PhysicsClient extends WorkerClient<PhysicsWorkerRequest> {
+export class PhysicsClient extends WorkerClient<PhysicsWorkerRequest, never> {
+
+    protected override onRequest(): Promise<unknown> {
+        return Promise.reject(new Error("Not supported"));
+    }
+
     public createBuffer(buffer: SharedArrayBuffer, options: BufferOptions): Promise<void> {
         return this.send({
             messageType: MessageType.REQUEST,

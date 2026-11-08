@@ -1,44 +1,18 @@
-import { MessageType, type ResponseMessage, type WorkerRequest } from "../types/message";
+import { type ResponseMessage, type WorkerRequest } from "../types/message";
+import { WorkerBridge } from "./worker-bridge";
 
-export abstract class GeneralWorker<T extends WorkerRequest> {
+export abstract class GeneralWorker<I extends WorkerRequest, O extends WorkerRequest> extends WorkerBridge<O, I> {
     constructor() {
-        self.addEventListener("message", (event) => {
-            const message = event.data as T | ResponseMessage<unknown>;
-
-            switch (message.messageType) {
-                case MessageType.REQUEST:
-                    this.handleRequest(message);
-                    break;
-
-                default:
-                    console.warn("Invalid worker message", message);
-                    break;
-            }
-        }, { passive: true });
+        super();
+        self.addEventListener("message", (event) => this.handleEvent(event), { passive: true });
     }
 
-    protected abstract onRequest(request: T): Promise<unknown>;
-
-    private async handleRequest(request: T): Promise<void> {
-        try {
-            const result = await this.onRequest(request);
-            self.postMessage({
-                messageType: MessageType.SUCCESS,
-                id: request.id,
-                result,
-            });
-        } catch (error) {
-            const reason = error instanceof Error ? error.message : "Unknown";
-            self.postMessage({
-                messageType: MessageType.FAILURE,
-                id: request.id,
-                reason,
-            });
-        }
+    protected override postMessage(message: ResponseMessage<unknown>): void {
+        self.postMessage(message);
     }
 }
 
-export abstract class ComputeWorker<T extends WorkerRequest> extends GeneralWorker<T> {
+export abstract class ComputeWorker<I extends WorkerRequest, O extends WorkerRequest> extends GeneralWorker<I, O> {
     private lastTime: number;
     private interval?: number;
     private isRunning: boolean;
