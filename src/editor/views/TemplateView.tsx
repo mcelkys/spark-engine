@@ -44,6 +44,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
     const [mass, setMass] = useState(template?.mass ?? 0);
     const [dragCoefficient, setDragCoefficient] = useState(template?.dragCoefficient ?? 1.2);
     const [frictionCoefficient, setFrictionCoefficient] = useState(template?.frictionCoefficient ?? 0.7);
+    const [elasticity, setElasticity] = useState(template?.elasticity ?? 0.65);
     const [runForce, setRunForce] = useState(template?.runForce ?? 0);
     const [depth, setDepth] = useState(template?.depth ?? 0);
     const [animations, setAnimations] = useState(template?.animations ?? null);
@@ -69,6 +70,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                         mass,
                         dragCoefficient,
                         frictionCoefficient,
+                        elasticity,
                         runForce,
                         depth,
                         animations: animations ?? undefined,
@@ -89,6 +91,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                             mass,
                             dragCoefficient,
                             frictionCoefficient,
+                            elasticity,
                             runForce,
                             depth,
                             animations: animations ?? undefined,
@@ -149,6 +152,7 @@ export const TemplateView: FC<TemplateViewProps> = ({ id }) => {
                         <TextField label="Drag coefficient" type="number" value={dragCoefficient} onChange={handleNumber(setDragCoefficient)} />
                         <TextField label="Friction coefficient" type="number" value={frictionCoefficient} onChange={handleNumber(setFrictionCoefficient)} />
                         <UnitField label="Movement force" units="N" type="number" value={runForce} onChange={handleNumber(setRunForce)} />
+                        <TextField label="Elasticity" type="number" value={elasticity} onChange={handleNumber(setElasticity)} />
                     </Hide>
                     <Hide show={traits.has(Trait.HAS_STATIC_DEPTH)}>
                         <TextField label="Render depth index" type="number" value={depth} onChange={handleNumber(setDepth)} />

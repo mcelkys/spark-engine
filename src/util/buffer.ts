@@ -10,7 +10,7 @@ export class EngineBuffer {
     public static readonly GPU_ATTRIBUTE_COUNT = 12;
     public static readonly ENTITY_F32_COUNT = 7;
     public static readonly ENTITY_U16_COUNT = 2;
-    public static readonly TEMPLATE_F32_COUNT = 11;
+    public static readonly TEMPLATE_F32_COUNT = 12;
     public static readonly TEMPLATE_U16_COUNT = 2;
 
     private isWaitingForLock: boolean;
@@ -35,6 +35,7 @@ export class EngineBuffer {
     public readonly mass: Float32Array;
     public readonly dragCoefficient: Float32Array;
     public readonly frictionCoefficient: Float32Array;
+    public readonly elasticity: Float32Array;
     public readonly runForce: Float32Array;
     public readonly depth: Float32Array;
 
@@ -97,6 +98,7 @@ export class EngineBuffer {
         this.mass = allocator.f32(options.maxTemplates);
         this.dragCoefficient = allocator.f32(options.maxTemplates);
         this.frictionCoefficient = allocator.f32(options.maxTemplates);
+        this.elasticity = allocator.f32(options.maxTemplates);
         this.runForce = allocator.f32(options.maxTemplates);
         this.depth = allocator.f32(options.maxTemplates);
 
@@ -442,6 +444,7 @@ export class EngineBuffer {
         this.mass[idx] = template.mass ?? 0.0;
         this.dragCoefficient[idx] = template.dragCoefficient ?? 1.2;
         this.frictionCoefficient[idx] = template.frictionCoefficient ?? 0.7;
+        this.elasticity[idx] = template.elasticity ?? 0.65;
         this.runForce[idx] = template.runForce ?? 0.0;
         this.depth[idx] = template.depth ?? 0.0;
         this.animations[idx] = template.animations ?? 0;
@@ -462,6 +465,7 @@ export class EngineBuffer {
         this.mass.copyWithin(idx, nextIdx, count);
         this.dragCoefficient.copyWithin(idx, nextIdx, count);
         this.frictionCoefficient.copyWithin(idx, nextIdx, count);
+        this.elasticity.copyWithin(idx, nextIdx, count);
         this.runForce.copyWithin(idx, nextIdx, count);
         this.depth.copyWithin(idx, nextIdx, count);
         this.animations.copyWithin(idx, nextIdx, count);
@@ -476,6 +480,7 @@ export class EngineBuffer {
         this.mass[lastIdx] = 0.0;
         this.dragCoefficient[lastIdx] = 0.0;
         this.frictionCoefficient[lastIdx] = 0.0;
+        this.elasticity[lastIdx] = 0.0;
         this.runForce[lastIdx] = 0.0;
         this.depth[lastIdx] = 0.0;
         this.animations[lastIdx] = 0;
@@ -495,6 +500,7 @@ export class EngineBuffer {
         this.mass.fill(0.0, 0, count);
         this.dragCoefficient.fill(0.0, 0, count);
         this.frictionCoefficient.fill(0.0, 0, count);
+        this.elasticity.fill(0.0, 0, count);
         this.runForce.fill(0.0, 0, count);
         this.depth.fill(0.0, 0, count);
         this.animations.fill(0, 0, count);

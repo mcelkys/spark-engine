@@ -28,6 +28,7 @@ export interface TemplateOptions {
     mass?: number;
     dragCoefficient?: number;
     frictionCoefficient?: number;
+    elasticity?: number;
     runForce?: number;
     depth?: number;
     animations?: number;
